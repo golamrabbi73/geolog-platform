@@ -1,8 +1,26 @@
 @import "tailwindcss";
+@plugin "daisyui/theme" {
+  name: "geolog-light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --color-primary: #2563eb;
+  --color-accent: #f59e0b;
+
+  /* Surface */
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+
+  /* Text */
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+
+  /* Border */
+  --color-border: #e2e8f0;
 }
 
 @theme inline {
@@ -12,12 +30,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
