@@ -1,6 +1,7 @@
 import { z } from "zod";
+import type { Lithology, LabStatus } from "@/types/common";
 
-const lithologyOptions = [
+const lithologyOptions: [Lithology, ...Lithology[]] = [
   "Sandstone",
   "Limestone",
   "Shale",
@@ -8,11 +9,13 @@ const lithologyOptions = [
   "Siltstone",
   "Coal",
   "Basalt",
-  "Granite"
-] as const;
+  "Granite",
+];
 
-
-const labStatusOptions = ["pending", "completed"] as const;
+const labStatusOptions: [LabStatus, ...LabStatus[]] = [
+  "pending",
+  "completed",
+];
 
 export const sampleSchema = z.object({
   sampleName: z.string().min(3, "Sample name must be at least 3 characters."),
@@ -30,7 +33,7 @@ export const sampleSchema = z.object({
   
   labStatus: z.enum(labStatusOptions).default("pending"),
   
-  collectionDate: z.string().datetime({ message: "Invalid ISO date format." }),
-  imageUrl: z.string().url("Invalid image URL.").optional().or(z.literal("")),
+  collectionDate: z.string().min(1, "Collection date is required."),
+  imageUrl: z.string().url("Invalid image URL.").optional(),
   notes: z.string().max(500, "Notes cannot exceed 500 characters.").optional(),
 });
