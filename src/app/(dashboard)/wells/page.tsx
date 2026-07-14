@@ -1,4 +1,5 @@
 import WellForm from "@/components/forms/WellForm";
+import WellTable from "@/components/well/WellTable";
 
 export default function WellsPage() {
   return (
@@ -17,6 +18,10 @@ export default function WellsPage() {
         <div className="card-body">
           <WellForm />
         </div>
+      </div>
+
+      <div className="mt-10">
+        <WellTable />
       </div>
     </div>
   );
