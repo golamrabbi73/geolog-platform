@@ -1,0 +1,39 @@
+import { z } from "zod";
+
+export const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(3, "Name must be at least 3 characters."),
+
+    email: z.email("Invalid email address."),
+
+    password: z
+      .string()
+      .min(
+        8,
+        "Password must be at least 8 characters."
+      )
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+        "Password must contain uppercase, lowercase, number, and special character."
+      ),
+
+    confirmPassword: z.string(),
+
+    photoURL: z
+      .union([z.url(), z.literal("")])
+      .optional(),
+  })
+  .refine(
+    (data) =>
+      data.password === data.confirmPassword,
+    {
+      path: ["confirmPassword"],
+      message: "Passwords do not match.",
+    }
+  );
+
+export type RegisterFormData = z.infer<
+  typeof registerSchema
+>;

@@ -1,5 +1,13 @@
-export type UserRole = "fieldEngineer" | "manager" | "admin";
+export type UserRole =
+  | "fieldEngineer"
+  | "manager"
+  | "admin";
 
-export type UserStatus = "active" | "suspended";
+export type UserStatus =
+  | "active"
+  | "suspended";
 
-export type WellStatus = "drilling" | "completed" | "suspended" | "abandoned";
+export type WellStatus =
+  | "planned"
+  | "active"
+  | "completed";
