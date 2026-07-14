@@ -1,9 +1,9 @@
 import {
-  InputHTMLAttributes,
   forwardRef,
+  type InputHTMLAttributes,
 } from "react";
 
-interface Props
+interface FormInputProps
   extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
@@ -11,12 +11,12 @@ interface Props
 
 const FormInput = forwardRef<
   HTMLInputElement,
-  Props
->(({ label, error, ...props }, ref) => {
+  FormInputProps
+>(({ label, error, className, ...props }, ref) => {
   return (
-    <div className="form-control">
+    <div className="form-control w-full">
       <label className="label">
-        <span className="label-text">
+        <span className="label-text font-medium">
           {label}
         </span>
       </label>
@@ -24,13 +24,17 @@ const FormInput = forwardRef<
       <input
         ref={ref}
         {...props}
-        className="input input-bordered w-full"
+        className={`input input-bordered w-full ${
+          className ?? ""
+        }`}
       />
 
       {error && (
-        <span className="text-error text-sm mt-1">
-          {error}
-        </span>
+        <label className="label">
+          <span className="label-text-alt text-error">
+            {error}
+          </span>
+        </label>
       )}
     </div>
   );

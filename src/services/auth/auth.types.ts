@@ -13,23 +13,22 @@ export interface LoginPayload {
   password: string;
 }
 
-export type RegisterResponse =
-  ApiResponse<User>;
+export type RegisterResponse = ApiResponse<User>;
 
-export interface LoginData {
+export interface LoginResponseData {
   accessToken: string;
   user: User;
 }
 
 export type LoginResponse =
-  ApiResponse<LoginData>;
+  ApiResponse<LoginResponseData>;
 
-export interface RefreshTokenData {
+export interface RefreshTokenResponseData {
   accessToken: string;
 }
 
 export type RefreshTokenResponse =
-  ApiResponse<RefreshTokenData>;
+  ApiResponse<RefreshTokenResponseData>;
 
 export type MeResponse =
   ApiResponse<User>;

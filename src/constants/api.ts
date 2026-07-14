@@ -1,9 +1,9 @@
 export const API_ENDPOINTS = {
-  AUTH: "/users",
+  USERS: "/users",
 
-  SAMPLE: "/core-samples",
+  CORE_SAMPLES: "/core-samples",
 
-  WELL: "/wells",
+  WELLS: "/wells",
 
   ANALYTICS: "/analytics/dashboard",
 } as const;

@@ -15,7 +15,7 @@ export const registerUser = async (
   payload: RegisterPayload
 ): Promise<RegisterResponse> => {
   const { data } = await axiosInstance.post<RegisterResponse>(
-    `${API_ENDPOINTS.AUTH}/register`,
+    `${API_ENDPOINTS.USERS}/register`,
     payload
   );
 
@@ -27,7 +27,7 @@ export const loginUser = async (
   payload: LoginPayload
 ): Promise<LoginResponse> => {
   const { data } = await axiosInstance.post<LoginResponse>(
-    `${API_ENDPOINTS.AUTH}/login`,
+    `${API_ENDPOINTS.USERS}/login`,
     payload
   );
 
@@ -37,23 +37,23 @@ export const loginUser = async (
 // Logout
 export const logoutUser = async (): Promise<void> => {
   await axiosInstance.post(
-    `${API_ENDPOINTS.AUTH}/logout`
+    `${API_ENDPOINTS.USERS}/logout`
   );
 };
 
-// Me
+// Get Logged In User
 export const getMe = async (): Promise<MeResponse> => {
   const { data } = await axiosInstance.get<MeResponse>(
-    `${API_ENDPOINTS.AUTH}/me`
+    `${API_ENDPOINTS.USERS}/me`
   );
 
   return data;
 };
 
-// Refresh
+// Refresh Access Token
 export const refreshToken = async (): Promise<RefreshTokenResponse> => {
   const { data } = await axiosInstance.post<RefreshTokenResponse>(
-    `${API_ENDPOINTS.AUTH}/refresh-token`
+    `${API_ENDPOINTS.USERS}/refresh-token`
   );
 
   return data;

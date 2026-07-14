@@ -1,25 +1,15 @@
-const ACCESS_TOKEN_KEY = "accessToken";
+const TOKEN_KEY = "geolog_access_token";
 
-export const getAccessToken = (): string | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+export const saveAccessToken = (token: string) => {
+  localStorage.setItem(TOKEN_KEY, token);
 };
 
-export const setAccessToken = (token: string): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
+export const getAccessToken = () => {
+  if (typeof window === "undefined") return null;
 
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  return localStorage.getItem(TOKEN_KEY);
 };
 
-export const removeAccessToken = (): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
+export const removeAccessToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
 };
