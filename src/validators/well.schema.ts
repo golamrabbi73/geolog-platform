@@ -15,16 +15,15 @@ export const wellSchema = z.object({
 
   depth: z.coerce
     .number()
-    .min(
-      0,
-      "Depth must be greater than or equal to 0."
-    ),
+    .min(0, "Depth must be greater than or equal to 0."),
 
-  status: z.enum([
-    "planned",
-    "active",
-    "completed",
-  ]),
+  status: z
+    .enum([
+      "planned",
+      "active",
+      "completed",
+    ])
+    .default("planned"),
 
   description: z.string().optional(),
 });
