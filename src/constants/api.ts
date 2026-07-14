@@ -6,4 +6,4 @@ export const API_ENDPOINTS = {
   WELL: "/wells",
 
   ANALYTICS: "/analytics/dashboard",
-};
+} as const;

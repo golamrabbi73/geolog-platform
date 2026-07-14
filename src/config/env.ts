@@ -1,5 +1,5 @@
 export const env = {
   baseURL:
     process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:5000/api/v1",
+    "https://geolog-platform-server.onrender.com/api/v1",
 };
