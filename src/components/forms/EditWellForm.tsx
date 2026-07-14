@@ -12,6 +12,8 @@ import FormTextarea from "@/components/ui/FormTextarea";
 import { useGetWell } from "@/hooks/well/useGetWell";
 import { useUpdateWell } from "@/hooks/well/useUpdateWell";
 
+import toast from "react-hot-toast";
+
 import {
   wellSchema,
   type WellFormData,
@@ -55,15 +57,21 @@ export default function EditWellForm({
 
   const onSubmit = (formData: WellFormData) => {
     mutate(
-      {
+    {
         id,
         payload: formData,
-      },
-      {
+    },
+    {
         onSuccess: () => {
-          router.push("/wells");
+        toast.success("Well updated successfully.");
+
+        router.push("/wells");
         },
-      }
+
+        onError: () => {
+        toast.error("Failed to update well.");
+        },
+    }
     );
   };
 

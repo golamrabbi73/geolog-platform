@@ -9,6 +9,8 @@ import FormTextarea from "@/components/ui/FormTextarea";
 
 import { useCreateWell } from "@/hooks/well/useCreateWell";
 
+import toast from "react-hot-toast";
+
 import {
   wellSchema,
   type WellFormData,
@@ -40,14 +42,16 @@ export default function WellForm() {
   const onSubmit = (data: WellFormData) => {
     mutate(data, {
       onSuccess: () => {
+        toast.success("Well created successfully.");
+
         reset();
 
         router.push("/wells");
         },
 
-      onError: (error) => {
-        console.error(error);
-      },
+      onError: () => {
+        toast.error("Failed to create well.");
+        },
     });
   };
 

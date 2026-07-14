@@ -11,6 +11,8 @@ import WellSearch from "./WellSearch";
 import WellStatusFilter from "./WellStatusFilter";
 import { useDebounce } from "use-debounce";
 
+import toast from "react-hot-toast";
+
 export default function WellTable() {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -122,14 +124,22 @@ export default function WellTable() {
                         Edit
                       </button>
 
+                      {/* delete button */}
                       <button
                         onClick={() =>
-                          deleteMutate(well._id)
+                            deleteMutate(well._id, {
+                            onSuccess: () => {
+                                toast.success("Well deleted successfully.");
+                            },
+                            onError: () => {
+                                toast.error("Failed to delete well.");
+                            },
+                            })
                         }
                         className="btn btn-xs btn-error"
-                      >
+                        >
                         Delete
-                      </button>
+                        </button>
                     </td>
                   </tr>
                 ))
