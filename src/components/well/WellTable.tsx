@@ -3,10 +3,12 @@
 import { useDeleteWell } from "@/hooks/well/useDeleteWell";
 import { useGetWells } from "@/hooks/well/useGetWells";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function WellTable() {
   const { data, isPending, isError } = useGetWells();
   const { mutate: deleteMutate } = useDeleteWell();
+  const router = useRouter();
 
   if (isPending) {
     return (
@@ -67,8 +69,13 @@ export default function WellTable() {
                         View
                     </Link>
 
-                    <button className="btn btn-xs btn-warning">
-                      Edit
+                    <button
+                        onClick={() =>
+                            router.push(`/wells/edit/${well._id}`)
+                        }
+                        className="btn btn-xs btn-warning"
+                    >
+                        Edit
                     </button>
 
                     <button

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -7,17 +9,27 @@ import FormInput from "@/components/ui/FormInput";
 import FormSelect from "@/components/ui/FormSelect";
 import FormTextarea from "@/components/ui/FormTextarea";
 
-import { useCreateWell } from "@/hooks/well/useCreateWell";
+import { useGetWell } from "@/hooks/well/useGetWell";
+import { useUpdateWell } from "@/hooks/well/useUpdateWell";
 
 import {
   wellSchema,
   type WellFormData,
 } from "@/validators/well.schema";
-import { useRouter } from "next/navigation";
 
-export default function WellForm() {
-  const { mutate, isPending } = useCreateWell();
+type Props = {
+  id: string;
+};
+
+export default function EditWellForm({
+  id,
+}: Props) {
   const router = useRouter();
+
+  const { data, isPending } = useGetWell(id);
+
+  const { mutate, isPending: isUpdating } =
+    useUpdateWell();
 
   const {
     register,
@@ -26,72 +38,71 @@ export default function WellForm() {
     formState: { errors },
   } = useForm<WellFormData>({
     resolver: zodResolver(wellSchema),
-
-    defaultValues: {
-      wellName: "",
-      location: "",
-      operator: "",
-      depth: 0,
-      status: "planned",
-      description: "",
-    },
   });
 
-  const onSubmit = (data: WellFormData) => {
-    mutate(data, {
-      onSuccess: () => {
-        reset();
+  useEffect(() => {
+    if (data?.data) {
+      reset({
+        wellName: data.data.wellName,
+        location: data.data.location,
+        operator: data.data.operator,
+        depth: data.data.depth,
+        status: data.data.status,
+        description: data.data.description ?? "",
+      });
+    }
+  }, [data, reset]);
 
-        router.push("/wells");
-        },
-
-      onError: (error) => {
-        console.error(error);
+  const onSubmit = (formData: WellFormData) => {
+    mutate(
+      {
+        id,
+        payload: formData,
       },
-    });
+      {
+        onSuccess: () => {
+          router.push("/wells");
+        },
+      }
+    );
   };
+
+  if (isPending) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-5"
     >
-      {/* Well Name */}
       <FormInput
         label="Well Name"
-        placeholder="Enter well name"
         error={errors.wellName?.message}
         {...register("wellName")}
       />
 
-      {/* Location */}
       <FormInput
         label="Location"
-        placeholder="Enter location"
         error={errors.location?.message}
         {...register("location")}
       />
 
-      {/* Operator */}
       <FormInput
         label="Operator"
-        placeholder="Enter operator name"
         error={errors.operator?.message}
         {...register("operator")}
       />
 
-      {/* Depth */}
       <FormInput
-        label="Depth (m)"
+        label="Depth"
         type="number"
-        placeholder="Enter depth"
         error={errors.depth?.message}
         {...register("depth", {
           valueAsNumber: true,
         })}
       />
 
-      {/* Status */}
       <FormSelect
         label="Status"
         error={errors.status?.message}
@@ -112,22 +123,21 @@ export default function WellForm() {
         {...register("status")}
       />
 
-      {/* Description */}
       <FormTextarea
         label="Description"
         rows={4}
-        placeholder="Write description..."
         error={errors.description?.message}
         {...register("description")}
       />
 
-      {/* Submit Button */}
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isUpdating}
         className="btn btn-primary w-full"
       >
-        {isPending ? "Creating..." : "Create Well"}
+        {isUpdating
+          ? "Updating..."
+          : "Update Well"}
       </button>
     </form>
   );

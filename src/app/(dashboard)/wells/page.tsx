@@ -1,28 +1,29 @@
-import WellForm from "@/components/forms/WellForm";
+import Link from "next/link";
 import WellTable from "@/components/well/WellTable";
 
 export default function WellsPage() {
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          Create Well
-        </h1>
+    <section className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">
+            Well Management
+          </h1>
 
-        <p className="text-base-content/70 mt-2">
-          Add a new well to the system.
-        </p>
-      </div>
-
-      <div className="card bg-base-100 shadow-md">
-        <div className="card-body">
-          <WellForm />
+          <p className="text-base-content/70">
+            Manage all wells.
+          </p>
         </div>
+
+        <Link
+          href="/wells/create"
+          className="btn btn-primary"
+        >
+          + Create Well
+        </Link>
       </div>
 
-      <div className="mt-10">
-        <WellTable />
-      </div>
-    </div>
+      <WellTable />
+    </section>
   );
 }
