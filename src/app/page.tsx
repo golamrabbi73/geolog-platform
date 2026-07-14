@@ -2,6 +2,6 @@
 
 export default function Home() {
   return (
-    <div>geolog-platrom comming...</div>
+    <div className="btn btn-primary">geolog-platrom comming...</div>
   );
 }

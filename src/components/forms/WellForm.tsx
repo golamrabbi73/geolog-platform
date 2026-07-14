@@ -4,6 +4,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import FormInput from "@/components/ui/FormInput";
+import FormSelect from "@/components/ui/FormSelect";
+import FormTextarea from "@/components/ui/FormTextarea";
+
+import { useCreateWell } from "@/hooks/well/useCreateWell";
 
 import {
   wellSchema,
@@ -11,9 +15,12 @@ import {
 } from "@/validators/well.schema";
 
 export default function WellForm() {
+  const { mutate, isPending } = useCreateWell();
+
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<WellFormData>({
     resolver: zodResolver(wellSchema),
@@ -29,7 +36,17 @@ export default function WellForm() {
   });
 
   const onSubmit = (data: WellFormData) => {
-    console.log(data);
+    mutate(data, {
+      onSuccess: (response) => {
+        console.log("Well created:", response);
+
+        reset();
+      },
+
+      onError: (error) => {
+        console.error(error);
+      },
+    });
   };
 
   return (
@@ -38,18 +55,78 @@ export default function WellForm() {
       className="space-y-5"
     >
       {/* Well Name */}
+      <FormInput
+        label="Well Name"
+        placeholder="Enter well name"
+        error={errors.wellName?.message}
+        {...register("wellName")}
+      />
 
       {/* Location */}
+      <FormInput
+        label="Location"
+        placeholder="Enter location"
+        error={errors.location?.message}
+        {...register("location")}
+      />
 
       {/* Operator */}
+      <FormInput
+        label="Operator"
+        placeholder="Enter operator name"
+        error={errors.operator?.message}
+        {...register("operator")}
+      />
 
       {/* Depth */}
+      <FormInput
+        label="Depth (m)"
+        type="number"
+        placeholder="Enter depth"
+        error={errors.depth?.message}
+        {...register("depth", {
+          valueAsNumber: true,
+        })}
+      />
 
       {/* Status */}
+      <FormSelect
+        label="Status"
+        error={errors.status?.message}
+        options={[
+          {
+            label: "Planned",
+            value: "planned",
+          },
+          {
+            label: "Active",
+            value: "active",
+          },
+          {
+            label: "Completed",
+            value: "completed",
+          },
+        ]}
+        {...register("status")}
+      />
 
       {/* Description */}
+      <FormTextarea
+        label="Description"
+        rows={4}
+        placeholder="Write description..."
+        error={errors.description?.message}
+        {...register("description")}
+      />
 
       {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={isPending}
+        className="btn btn-primary w-full"
+      >
+        {isPending ? "Creating..." : "Create Well"}
+      </button>
     </form>
   );
 }

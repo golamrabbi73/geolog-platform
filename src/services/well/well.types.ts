@@ -1,14 +1,18 @@
 import type { ApiResponse } from "@/types/api";
-import type { Well } from "@/types/well";
+import type { Well, WellStatus } from "@/types/well";
 
-export type GetWellsResponse =
-  ApiResponse<Well[]>;
+export type GetWellsResponse = ApiResponse<Well[]>;
 
-export type GetWellResponse =
-  ApiResponse<Well>;
+export type GetWellResponse = ApiResponse<Well>;
 
-export type CreateWellPayload =
-  Omit<Well, "_id" | "createdAt" | "updatedAt" | "createdBy">;
+export interface CreateWellPayload {
+  wellName: string;
+  location: string;
+  operator: string;
+  depth: number;
+  status: WellStatus;
+  description?: string;
+}
 
 export type UpdateWellPayload =
   Partial<CreateWellPayload>;
