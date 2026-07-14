@@ -12,9 +12,17 @@ import type {
 } from "./well.types";
 
 // Get All Wells
-export const getAllWells = async (): Promise<GetWellsResponse> => {
+export const getAllWells = async (
+  params?: {
+    searchTerm?: string;
+    status?: string;
+  }
+): Promise<GetWellsResponse> => {
   const { data } = await axiosInstance.get<GetWellsResponse>(
-    API_ENDPOINTS.WELLS
+    API_ENDPOINTS.WELLS,
+    {
+      params,
+    }
   );
 
   return data;

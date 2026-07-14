@@ -4,9 +4,17 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getAllWells } from "@/services/well/well.service";
 
-export const useGetWells = () => {
+type Params = {
+  searchTerm?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+};
+export const useGetWells = (
+  params?: Params
+) => {
   return useQuery({
-    queryKey: ["wells"],
-    queryFn: getAllWells,
+    queryKey: ["wells", params],
+    queryFn: () => getAllWells(params),
   });
 };
