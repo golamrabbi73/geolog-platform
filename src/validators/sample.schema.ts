@@ -1,35 +1,17 @@
 import { z } from "zod";
 
-export const sampleSchema = z.object({
-  sampleId: z
-    .string()
-    .min(1, "Sample ID is required."),
+export const coreSampleSchema = z.object({
+  sampleId: z.string().min(1, "Sample ID is required."),
 
-  wellName: z
-    .string()
-    .min(1, "Well name is required."),
+  wellName: z.string().min(1, "Well name is required."),
 
-  depthFrom: z.coerce
-    .number()
-    .min(
-      0,
-      "Depth From must be greater than or equal to 0."
-    ),
+  depthFrom: z.number().min(0, "Depth From must be at least 0."),
 
-  depthTo: z.coerce
-    .number()
-    .min(
-      0,
-      "Depth To must be greater than or equal to 0."
-    ),
+  depthTo: z.number().min(0, "Depth To must be at least 0."),
 
-  rockType: z
-    .string()
-    .min(1, "Rock type is required."),
+  rockType: z.string().min(1, "Rock type is required."),
 
   description: z.string().optional(),
 });
 
-export type SampleFormData = z.infer<
-  typeof sampleSchema
->;
+export type CoreSampleFormData = z.infer<typeof coreSampleSchema>;
