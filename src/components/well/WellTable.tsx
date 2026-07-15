@@ -13,6 +13,9 @@ import { useDebounce } from "use-debounce";
 
 import toast from "react-hot-toast";
 
+
+import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+
 export default function WellTable() {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -26,6 +29,11 @@ export default function WellTable() {
     500
     );
   const [status, setStatus] = useState("");
+  const [selectedId, setSelectedId] =
+  useState("");
+
+const [openModal, setOpenModal] =
+  useState(false);
 
   const { data, isPending, isError } = useGetWells({
   searchTerm: debouncedSearch,
@@ -126,17 +134,11 @@ export default function WellTable() {
 
                       {/* delete button */}
                       <button
-                        onClick={() =>
-                            deleteMutate(well._id, {
-                            onSuccess: () => {
-                                toast.success("Well deleted successfully.");
-                            },
-                            onError: () => {
-                                toast.error("Failed to delete well.");
-                            },
-                            })
-                        }
                         className="btn btn-xs btn-error"
+                        onClick={() => {
+                            setSelectedId(well._id);
+                            setOpenModal(true);
+                        }}
                         >
                         Delete
                         </button>
@@ -177,6 +179,13 @@ export default function WellTable() {
                 Next
             </button>
         </div>
+
+        <DeleteConfirmModal
+        id={selectedId}
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        onConfirm={(id) => deleteMutate(id)}
+        />
       </div>
     </div>
   );

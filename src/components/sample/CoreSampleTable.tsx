@@ -12,6 +12,8 @@ import { useGetCoreSamples } from "@/hooks/core-sample/useGetCoreSamples";
 import CoreSampleSearch from "./CoreSampleSearch";
 import CoreSampleRockTypeFilter from "./CoreSampleRockTypeFilter";
 
+import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+
 export default function CoreSampleTable() {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -25,6 +27,12 @@ export default function CoreSampleTable() {
     500
   );
   const [rockType, setRockType] = useState("");
+
+  const [selectedId, setSelectedId] =
+  useState("");
+
+const [openModal, setOpenModal] =
+  useState(false);
 
   const { data, isPending, isError } = useGetCoreSamples({
     searchTerm: debouncedSearch,
@@ -122,20 +130,14 @@ export default function CoreSampleTable() {
 
                       {/* delete button */}
                       <button
-                        onClick={() =>
-                          deleteMutate(sample._id, {
-                            onSuccess: () => {
-                              toast.success("Sample deleted successfully.");
-                            },
-                            onError: () => {
-                              toast.error("Failed to delete sample.");
-                            },
-                          })
-                        }
-                        className="btn btn-xs btn-error"
-                      >
-                        Delete
-                      </button>
+                    className="btn btn-xs btn-error"
+                    onClick={() => {
+                        setSelectedId(sample._id);
+                        setOpenModal(true);
+                    }}
+                    >
+                    Delete
+                    </button>
                     </td>
                   </tr>
                 ))
@@ -173,6 +175,13 @@ export default function CoreSampleTable() {
             Next
           </button>
         </div>
+
+        <DeleteConfirmModal
+            id={selectedId}
+            isOpen={openModal}
+            onClose={() => setOpenModal(false)}
+            onConfirm={(id) => deleteMutate(id)}
+            />
       </div>
     </div>
   );
