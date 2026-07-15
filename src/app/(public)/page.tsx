@@ -5,13 +5,13 @@ import Hero from "@/components/home/Hero";
 import HowItWorks from "@/components/home/HowItWorks";
 import Statistics from "@/components/home/Statistics";
 import WhyGeoLog from "@/components/home/WhyGeoLog";
-import Footer from "@/components/shared/Footer";
-import Navbar from "@/components/shared/Navbar";
+// import Footer from "@/components/shared/Footer";
+// import Navbar from "@/components/shared/Navbar";
 
 export default function HomePage() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Hero />
       <Features />
       <HowItWorks />
@@ -19,7 +19,7 @@ export default function HomePage() {
       <WhyGeoLog />
       <FAQ />
       <CTA />
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

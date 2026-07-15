@@ -1,17 +1,20 @@
 import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 
-export default function AuthLayout({
+export default function PublicLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <>
       <Navbar />
 
-      <main className="min-h-screen bg-base-200 flex items-center justify-center px-4">
+      <main className="flex-1">
         {children}
       </main>
+
+      <Footer />
     </>
   );
 }
