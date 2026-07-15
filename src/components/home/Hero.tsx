@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
 
+import { useAuthStore } from "@/store/auth.store";
+
 export default function Hero() {
+  const user = useAuthStore((state) => state.user);
+
   return (
     <section className="py-24">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -31,19 +37,30 @@ export default function Hero() {
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
-              <Link
-                href="/register"
-                className="btn btn-primary btn-lg"
-              >
-                Get Started
-              </Link>
+              {!user ? (
+                <>
+                  <Link
+                    href="/register"
+                    className="btn btn-primary btn-lg"
+                  >
+                    Get Started
+                  </Link>
 
-              <Link
-                href="/login"
-                className="btn btn-outline btn-lg"
-              >
-                Live Demo
-              </Link>
+                  <Link
+                    href="/login"
+                    className="btn btn-outline btn-lg"
+                  >
+                    Live Demo
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href="/dashboard"
+                  className="btn btn-primary btn-lg"
+                >
+                  Go to Dashboard
+                </Link>
+              )}
             </div>
 
             <div className="mt-12 flex flex-wrap gap-8">
@@ -84,6 +101,7 @@ export default function Hero() {
             <div className="card bg-base-100 shadow-2xl w-full max-w-md border">
               <div className="card-body">
                 <div className="stats stats-vertical shadow">
+
                   <div className="stat">
                     <div className="stat-title">
                       Active Wells
@@ -113,6 +131,7 @@ export default function Hero() {
                       42
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>

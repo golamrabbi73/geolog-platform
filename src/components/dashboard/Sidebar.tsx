@@ -2,42 +2,62 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  LogOut,
+} from "lucide-react";
 
 import { dashboardNavigation } from "@/constants/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { removeAccessToken } from "@/utils/token";
 import { logoutUser } from "@/services/auth";
-import { LogOut } from "lucide-react";
 
 export default function Sidebar() {
-    const router = useRouter();
-    const { logout } = useAuthStore();
-    const { user } = useAuthStore();
-    const pathname = usePathname();
+  const router = useRouter();
+  const pathname = usePathname();
 
-    const handleLogout = async () => {
-        try {
-            await logoutUser();
-        } catch {}
+  const { logout, user } = useAuthStore();
 
-        removeAccessToken();
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {}
 
-        logout();
+    removeAccessToken();
+    logout();
 
-        router.replace("/login");
-    };
+    router.replace("/");
+  };
 
   return (
-    <aside className="w-64 min-h-full bg-base-100 border-r border-base-300">
+    <aside className="flex h-full w-64 flex-col bg-base-100 border-r border-base-300">
+
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-base-300">
-        <h1 className="text-2xl font-bold text-primary">
+
+      <div className="border-b border-base-300 p-6">
+
+        <Link
+          href="/"
+          className="text-2xl font-bold text-primary"
+        >
           GeoLog
-        </h1>
+        </Link>
+
+        <Link
+          href="/"
+          className="mt-3 flex items-center gap-2 text-sm text-base-content/70 hover:text-primary transition"
+        >
+          <ArrowLeft size={16} />
+
+          Back to Website
+        </Link>
+
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+
+      <nav className="flex-1 space-y-2 p-4">
+
         {dashboardNavigation.map((item) => {
           const Icon = item.icon;
 
@@ -48,7 +68,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 transition
               ${
                 active
                   ? "bg-primary text-primary-content"
@@ -57,48 +77,57 @@ export default function Sidebar() {
             >
               <Icon size={20} />
 
-              <span>{item.title}</span>
+              {item.title}
             </Link>
           );
         })}
+
       </nav>
 
-      {/* Footer */}
+      {/* Bottom */}
+
       <div className="border-t border-base-300 p-4">
-        <div className="flex items-center gap-3">
 
-            <div className="avatar placeholder">
-            <div className="bg-primary text-primary-content rounded-full w-12">
-                <span>
-                {user?.name?.charAt(0).toUpperCase() ?? "U"}
-                </span>
+        <div className="mb-4 flex items-center gap-3">
+
+          <div className="avatar placeholder">
+
+            <div className="w-12 rounded-full bg-primary text-primary-content">
+
+              <span className="text-lg font-bold">
+                {user?.name?.charAt(0).toUpperCase() ??
+                  "U"}
+              </span>
+
             </div>
-            </div>
 
-            <div className="flex-1">
+          </div>
 
-            <p className="font-semibold">
-                {user?.name ?? "Guest"}
+          <div>
+
+            <h3 className="font-semibold">
+              {user?.name}
+            </h3>
+
+            <p className="text-xs opacity-70 capitalize">
+              {user?.role}
             </p>
 
-            <p className="text-xs opacity-70">
-                {user?.role ?? ""}
-            </p>
-
-            </div>
+          </div>
 
         </div>
-        </div>
 
-        {/* logout button */}
         <button
-            onClick={handleLogout}
-            className="btn btn-outline btn-error w-full mt-4"
+          onClick={handleLogout}
+          className="btn btn-error btn-outline w-full"
         >
-            <LogOut size={18} />
+          <LogOut size={18} />
 
-            Logout
+          Logout
         </button>
+
+      </div>
+
     </aside>
   );
 }

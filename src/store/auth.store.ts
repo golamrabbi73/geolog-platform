@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { User } from "@/types/user";
+import { removeAccessToken } from "@/utils/token";
 
 interface AuthState {
   accessToken: string | null;
@@ -24,9 +25,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       user,
     }),
 
-  logout: () =>
+  logout: () => {
+    removeAccessToken();
+
     set({
       accessToken: null,
       user: null,
-    }),
+    });
+  },
 }));
