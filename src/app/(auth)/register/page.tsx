@@ -1,4 +1,5 @@
 import AuthCard from "@/components/auth/AuthCard";
+import RegisterForm from "@/components/forms/RegisterForm";
 // import RegisterForm from "@/components/forms/RegisterForm";
 
 export default function RegisterPage() {
@@ -7,7 +8,8 @@ export default function RegisterPage() {
       title="Create Account"
       subtitle="Create your GeoLog account"
     >
-      {/* <RegisterForm /> */} jR
+      {/* <RegisterForm /> */}
+      <RegisterForm />
     </AuthCard>
   );
 }
