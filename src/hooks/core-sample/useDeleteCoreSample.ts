@@ -8,6 +8,7 @@ import {
 import {
   deleteCoreSample,
 } from "@/services/core-sample/core-sample.service";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const useDeleteCoreSample = () => {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ export const useDeleteCoreSample = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["core-samples"],
+        queryKey: QUERY_KEYS.SAMPLES,
       });
     },
   });

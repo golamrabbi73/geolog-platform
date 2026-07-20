@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 
 import { createCoreSample } from "@/services/core-sample/core-sample.service";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const useCreateCoreSample = () => {
   const queryClient = useQueryClient();
@@ -15,7 +16,7 @@ export const useCreateCoreSample = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["core-samples"],
+        queryKey: QUERY_KEYS.SAMPLES,
       });
     },
   });

@@ -36,6 +36,7 @@ export default function WellForm() {
       depth: 0,
       status: "planned",
       description: "",
+      imageUrl: "",
     },
   });
 
@@ -123,6 +124,14 @@ export default function WellForm() {
         placeholder="Write description..."
         error={errors.description?.message}
         {...register("description")}
+      />
+
+      {/* Image URL */}
+      <FormInput
+        label="Image URL (optional)"
+        placeholder="https://example.com/well-photo.jpg"
+        error={errors.imageUrl?.message}
+        {...register("imageUrl")}
       />
 
       {/* Submit Button */}

@@ -12,5 +12,6 @@ export interface Well extends BaseEntity {
   depth: number;
   status: WellStatus;
   description: string;
+  imageUrl?: string;
   createdBy: string;
 }

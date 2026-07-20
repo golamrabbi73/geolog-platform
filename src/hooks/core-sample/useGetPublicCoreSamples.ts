@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getAllCoreSamples } from "@/services/core-sample/core-sample.service";
+
+import { getPublicCoreSamples } from "@/services/core-sample/core-sample.service";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 
 type Params = {
@@ -12,11 +13,9 @@ type Params = {
   limit?: number;
 };
 
-export const useGetCoreSamples = (
-  params?: Params
-) => {
+export const useGetPublicCoreSamples = (params?: Params) => {
   return useQuery({
-    queryKey: [...QUERY_KEYS.SAMPLES, params],
-    queryFn: () => getAllCoreSamples(params),
+    queryKey: [...QUERY_KEYS.SAMPLES, "public", params],
+    queryFn: () => getPublicCoreSamples(params),
   });
 };

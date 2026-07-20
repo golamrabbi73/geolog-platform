@@ -50,6 +50,7 @@ export default function EditCoreSampleForm({
         depthTo: data.data.depthTo,
         rockType: data.data.rockType,
         description: data.data.description ?? "",
+        imageUrl: data.data.imageUrl ?? "",
       });
     }
   }, [data, reset]);
@@ -124,6 +125,13 @@ export default function EditCoreSampleForm({
         rows={4}
         error={errors.description?.message}
         {...register("description")}
+      />
+
+      <FormInput
+        label="Image URL (optional)"
+        placeholder="https://example.com/sample-photo.jpg"
+        error={errors.imageUrl?.message}
+        {...register("imageUrl")}
       />
 
       <button

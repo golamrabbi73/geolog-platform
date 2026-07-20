@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 
 
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+import SkeletonTable from "@/components/ui/SkeletonTable";
 
 export default function WellTable() {
   const router = useRouter();
@@ -45,11 +46,7 @@ const [openModal, setOpenModal] =
   const { mutate: deleteMutate } = useDeleteWell();
 
   if (isPending) {
-    return (
-      <p className="text-center py-10">
-        Loading wells...
-      </p>
-    );
+    return <SkeletonTable columns={6} />;
   }
 
   if (isError) {

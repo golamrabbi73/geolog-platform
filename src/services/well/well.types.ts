@@ -12,6 +12,7 @@ export interface CreateWellPayload {
   depth: number;
   status: WellStatus;
   description?: string;
+  imageUrl?: string;
 }
 
 export type UpdateWellPayload =

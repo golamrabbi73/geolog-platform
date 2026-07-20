@@ -36,6 +36,7 @@ export default function CoreSampleForm() {
       depthTo: 0,
       rockType: "",
       description: "",
+      imageUrl: "",
     },
   });
 
@@ -113,6 +114,13 @@ export default function CoreSampleForm() {
         placeholder="Description"
         error={errors.description?.message}
         {...register("description")}
+      />
+
+      <FormInput
+        label="Image URL (optional)"
+        placeholder="https://example.com/sample-photo.jpg"
+        error={errors.imageUrl?.message}
+        {...register("imageUrl")}
       />
 
       <button

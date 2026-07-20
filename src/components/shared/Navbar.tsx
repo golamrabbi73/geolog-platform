@@ -33,6 +33,7 @@ export default function Navbar() {
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal gap-2">
             <li><Link href="/">Home</Link></li>
+            <li><Link href="/explore">Explore</Link></li>
             <li><Link href="/#features">Features</Link></li>
             <li><Link href="/#statistics">Statistics</Link></li>
             <li><Link href="/about">About</Link></li>
@@ -118,6 +119,7 @@ export default function Navbar() {
             <ul className="menu dropdown-content mt-3 w-64 rounded-box bg-base-100 shadow border z-[100]">
 
               <li><Link href="/">Home</Link></li>
+              <li><Link href="/explore">Explore</Link></li>
               <li><Link href="/#features">Features</Link></li>
               <li><Link href="/#statistics">Statistics</Link></li>
               <li><Link href="/about">About</Link></li>
