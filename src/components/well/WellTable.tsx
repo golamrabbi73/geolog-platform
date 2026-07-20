@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import SkeletonTable from "@/components/ui/SkeletonTable";
+import AccessDenied from "../ui/AccessDenied";
 
 export default function WellTable() {
   const router = useRouter();
@@ -51,9 +52,9 @@ const [openModal, setOpenModal] =
 
   if (isError) {
     return (
-      <p className="text-error text-center py-10">
-        Failed to load wells.
-      </p>
+      <div className="mt-8">
+        <AccessDenied />
+      </div>
     );
   }
 

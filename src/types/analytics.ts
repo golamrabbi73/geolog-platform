@@ -16,13 +16,19 @@ export interface ChartItem {
 }
 
 export interface DashboardAnalytics {
-  summary: DashboardSummary;
+  summary: {
+    totalUsers: number;
+    totalWells: number;
+    totalSamples: number;
+  };
+  wellStatus: { _id: string; count: number }[];
+  rockTypes: { _id: string; count: number }[];
+  recentWells: any[];
+  recentSamples: any[];
+}
 
-  wellStatus: ChartItem[];
-
-  rockTypes: ChartItem[];
-
-  recentWells: Well[];
-
-  recentSamples: CoreSample[];
+export interface AnalyticsApiResponse {
+  success: boolean;
+  message: string;
+  data: DashboardAnalytics;
 }

@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  LogOut,
-} from "lucide-react";
-
+import { ArrowLeft, LogOut } from "lucide-react";
 import { dashboardNavigation } from "@/constants/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { removeAccessToken } from "@/utils/token";
@@ -15,119 +11,71 @@ import { logoutUser } from "@/services/auth";
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-
   const { logout, user } = useAuthStore();
 
   const handleLogout = async () => {
-    try {
-      await logoutUser();
-    } catch {}
-
+    try { await logoutUser(); } catch {}
     removeAccessToken();
     logout();
-
     router.replace("/");
   };
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-base-100 border-r border-base-300">
-
-      {/* Logo */}
-
-      <div className="border-b border-base-300 p-6">
-
-        <Link
-          href="/"
-          className="text-2xl font-bold text-primary"
-        >
-          GeoLog
+    <aside className="flex h-full w-64 flex-col bg-base-100/50 backdrop-blur-xl border-r border-base-200">
+      <div className="p-6">
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold">G</div>
+            <span className="hidden sm:block">GeoLog</span>
+          </Link>
+        <Link href="/" className="mt-4 flex items-center gap-2 text-xs font-medium text-base-content/60 hover:text-primary transition">
+          <ArrowLeft size={14} /> Back to Website
         </Link>
-
-        <Link
-          href="/"
-          className="mt-3 flex items-center gap-2 text-sm text-base-content/70 hover:text-primary transition"
-        >
-          <ArrowLeft size={16} />
-
-          Back to Website
-        </Link>
-
       </div>
 
-      {/* Navigation */}
-
-      <nav className="flex-1 space-y-2 p-4">
-
-        {dashboardNavigation.map((item) => {
-          const Icon = item.icon;
-
-          const active =
-            pathname === item.href;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 transition
-              ${
-                active
-                  ? "bg-primary text-primary-content"
-                  : "hover:bg-base-200"
-              }`}
-            >
-              <Icon size={20} />
-
-              {item.title}
-            </Link>
-          );
-        })}
-
+      <nav className="flex-1 space-y-1 px-4">
+        {dashboardNavigation
+          .filter((item) => item.roles.includes(user?.role || ""))
+          .map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  active ? "bg-primary text-white shadow-lg shadow-primary/20" : "hover:bg-base-200 text-base-content/80"
+                }`}
+              >
+                <Icon size={20} />
+                <span className="font-medium">{item.title}</span>
+              </Link>
+            );
+          })}
       </nav>
 
-      {/* Bottom */}
-
-      <div className="border-t border-base-300 p-4">
-
-        <div className="mb-4 flex items-center gap-3">
-
-          <div className="avatar placeholder">
-
-            <div className="w-12 rounded-full bg-primary text-primary-content">
-
-              <span className="text-lg font-bold">
-                {user?.name?.charAt(0).toUpperCase() ??
-                  "U"}
-              </span>
-
+      <div className="p-4 border-t border-base-200">
+        <Link href="/profile" className="flex items-center gap-3 p-3 rounded-2xl hover:bg-base-200/50 transition mb-3">
+          <div className="avatar">
+            <div className="w-10 rounded-full ring-2 ring-base-300">
+               {user?.photoURL ? (
+                <img src={user.photoURL} alt={user.name} />
+              ) : (
+                <div className="bg-primary text-white flex items-center justify-center font-bold">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
-
           </div>
-
           <div>
-
-            <h3 className="font-semibold">
-              {user?.name}
-            </h3>
-
-            <p className="text-xs opacity-70 capitalize">
-              {user?.role}
-            </p>
-
+            <h3 className="font-bold text-sm">{user?.name}</h3>
+            <p className="text-[10px] uppercase tracking-wider opacity-60">{user?.role}</p>
           </div>
-
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="btn btn-error btn-outline w-full"
-        >
-          <LogOut size={18} />
-
-          Logout
+        </Link>
+        
+        <button onClick={handleLogout} className="btn btn-ghost btn-sm text-error w-full justify-start gap-3">
+          <LogOut size={16} /> Logout
         </button>
-
       </div>
-
     </aside>
   );
 }

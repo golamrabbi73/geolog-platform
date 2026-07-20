@@ -1,44 +1,47 @@
-"use client";
-
+'use client';
 import SummaryCards from "@/components/dashboard/SummaryCards";
-import WellStatusChart from "@/components/dashboard/WellStatusChart";
-import RockTypeChart from "@/components/dashboard/RockTypeChart";
 import RecentWells from "@/components/dashboard/RecentWells";
 import RecentSamples from "@/components/dashboard/RecentSamples";
-
 import { useDashboardAnalytics } from "@/hooks/analytics/useDashboardAnalytics";
+import type { AnalyticsApiResponse } from "@/types/analytics";
+import SkeletonTable from "@/components/ui/SkeletonTable";
+
 
 export default function DashboardPage() {
-  const { data, isPending, isError } =
-    useDashboardAnalytics();
+  const { data, isPending, isError } = useDashboardAnalytics();
+  const typedData = data as AnalyticsApiResponse | undefined;
 
-  if (isPending) return <p>Loading...</p>;
+  if (isPending) return (
+    <div className="max-w-7xl mx-auto p-12 space-y-12">
+      <div className="h-8 w-32 bg-base-300 animate-pulse rounded" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-32 bg-base-300 animate-pulse rounded-2xl" />
+        ))}
+      </div>
+      <SkeletonTable rows={4} columns={4} />
+    </div>
+  );
 
-  if (isError || !data)
-    return <p>Failed to load dashboard.</p>;
+  if (isError || !typedData?.data) return <div className="p-12 text-center text-error">Unable to load dashboard data.</div>;
+
+  const { summary, recentWells, recentSamples } = typedData.data;
 
   return (
-    <div className="space-y-8">
-      <SummaryCards summary={data.data.summary} />
+    <div className="max-w-7xl mx-auto p-8 space-y-12">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight text-base-content">Dashboard</h1>
+      </header>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <WellStatusChart
-          data={data.data.wellStatus}
-        />
+      <SummaryCards summary={summary} />
 
-        <RockTypeChart
-          data={data.data.rockTypes}
-        />
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <RecentWells
-          wells={data.data.recentWells}
-        />
-
-        <RecentSamples
-          samples={data.data.recentSamples}
-        />
+      <div className="grid lg:grid-cols-2 gap-8">
+        <div className="bg-base-100 rounded-xl border border-base-200/60 p-6">
+          <RecentWells wells={recentWells} />
+        </div>
+        <div className="bg-base-100 rounded-xl border border-base-200/60 p-6">
+          <RecentSamples samples={recentSamples} />
+        </div>
       </div>
     </div>
   );

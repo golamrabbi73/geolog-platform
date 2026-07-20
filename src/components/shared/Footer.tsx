@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import {
   FaGithub,
   FaLinkedin,
   FaEnvelope,
 } from "react-icons/fa";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function Footer() {
+  const { user } = useAuthStore();
+
   return (
     <footer className="bg-neutral text-neutral-content">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
@@ -35,24 +40,25 @@ export default function Footer() {
             </Link>
 
             <Link
-              href="#features"
+              href="/#features"
               className="link link-hover"
             >
               Features
             </Link>
 
             <Link
-              href="#statistics"
+              href="/#statistics"
               className="link link-hover"
             >
               Statistics
             </Link>
 
+            {/* Conditional Auth Link */}
             <Link
-              href="/login"
+              href={user ? "/dashboard" : "/login"}
               className="link link-hover"
             >
-              Login
+              {user ? "Dashboard" : "Login"}
             </Link>
           </div>
 

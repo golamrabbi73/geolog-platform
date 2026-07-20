@@ -14,6 +14,7 @@ export default function AppThemeProvider({
       attribute="class"
       defaultTheme="light"
       enableSystem
+      disableTransitionOnChange
     >
       {children}
     </ThemeProvider>

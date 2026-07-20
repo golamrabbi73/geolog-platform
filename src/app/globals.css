@@ -1,51 +1,66 @@
 @import "tailwindcss";
+
 @plugin "daisyui" {
-  themes: geolog --default;
+  themes: geolog, geolog-dark;
 }
 
+/* Light Theme (geolog) */
 @plugin "daisyui/theme" {
   name: "geolog";
   default: true;
   color-scheme: light;
 
-  /* Base surface colors (neutral grays, not counted as brand colors) */
   --color-base-100: #ffffff;
   --color-base-200: #f4f5f7;
   --color-base-300: #e5e7eb;
   --color-base-content: #1f2937;
 
-  /* Brand palette: max 3 primary colors */
-  --color-primary: #2563eb; /* blue - main brand color */
+  --color-primary: #2563eb;
   --color-primary-content: #ffffff;
-
-  --color-secondary: #0d9488; /* teal - supporting accent */
+  --color-secondary: #0d9488;
   --color-secondary-content: #ffffff;
-
-  --color-accent: #7c3aed; /* violet - highlight accent */
+  --color-accent: #7c3aed;
   --color-accent-content: #ffffff;
 
-  /* Neutral (optional per design rules) */
   --color-neutral: #374151;
   --color-neutral-content: #f9fafb;
-
-  /* Functional/system colors (not part of the 3-color brand palette) */
   --color-info: #0ea5e9;
-  --color-info-content: #ffffff;
   --color-success: #16a34a;
-  --color-success-content: #ffffff;
   --color-warning: #f59e0b;
-  --color-warning-content: #ffffff;
   --color-error: #dc2626;
-  --color-error-content: #ffffff;
 
   --radius-selector: 0.75rem;
   --radius-field: 0.5rem;
   --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 0;
-  --noise: 0;
+}
+
+/* Dark Theme (geolog-dark) */
+@plugin "daisyui/theme" {
+  name: "geolog-dark";
+  color-scheme: dark;
+
+  --color-base-100: #0f172a;
+  --color-base-200: #1e293b;
+  --color-base-300: #334155;
+  --color-base-content: #f8fafc;
+
+  --color-primary: #3b82f6;
+  --color-primary-content: #ffffff;
+  --color-secondary: #2dd4bf;
+  --color-secondary-content: #0f172a;
+  --color-accent: #a78bfa;
+  --color-accent-content: #0f172a;
+
+  --color-neutral: #334155;
+  --color-neutral-content: #f8fafc;
+  --color-info: #38bdf8;
+  --color-success: #22c55e;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+
+  --radius-selector: 0.75rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
 }
 
 body {

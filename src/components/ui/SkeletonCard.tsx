@@ -1,4 +1,8 @@
-export default function SkeletonCard() {
+type Props = {
+  className?: string;
+};
+
+export default function SkeletonCard({ className = "" }: Props) {
   return (
     <div className="card h-[420px] w-full bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden flex flex-col animate-pulse">
       <div className="h-44 w-full shrink-0 bg-base-300" />
