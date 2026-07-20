@@ -14,5 +14,7 @@ export interface CoreSample extends BaseEntity {
 
   description: string;
 
+  imageUrl?: string;
+
   collectedBy: string | User;
 }

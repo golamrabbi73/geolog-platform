@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 
 import FormInput from "@/components/ui/FormInput";
 
+import toast from "react-hot-toast";
+
 import {
   loginSchema,
   type LoginFormData,
@@ -25,6 +27,7 @@ export default function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -33,6 +36,11 @@ export default function LoginForm() {
       password: "",
     },
   });
+
+  const fillDemoCredentials = () => {
+    setValue("email", "demo.engineer@geolog.app");
+    setValue("password", "Demo@1234");
+  };
 
   const onSubmit = (data: LoginFormData) => {
     mutate(data, {
@@ -50,6 +58,7 @@ export default function LoginForm() {
 
       onError: (error) => {
         console.error(error);
+        toast.error("Invalid email or password.");
       },
     });
   };
@@ -76,6 +85,14 @@ export default function LoginForm() {
         error={errors.password?.message}
         {...register("password")}
       />
+
+      <button
+        type="button"
+        onClick={fillDemoCredentials}
+        className="btn btn-outline btn-secondary w-full"
+      >
+        Use Demo Credentials
+      </button>
 
       <button
         type="submit"

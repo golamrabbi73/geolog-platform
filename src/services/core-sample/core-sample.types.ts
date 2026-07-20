@@ -25,6 +25,7 @@ export interface CreateCoreSamplePayload {
   depthTo: number;
   rockType: string;
   description?: string;
+  imageUrl?: string;
 }
 
 export type UpdateCoreSamplePayload =

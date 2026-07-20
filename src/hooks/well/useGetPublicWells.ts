@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getAllWells } from "@/services/well/well.service";
+import { getPublicWells } from "@/services/well/well.service";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 
 type Params = {
@@ -11,11 +11,10 @@ type Params = {
   page?: number;
   limit?: number;
 };
-export const useGetWells = (
-  params?: Params
-) => {
+
+export const useGetPublicWells = (params?: Params) => {
   return useQuery({
-    queryKey: [...QUERY_KEYS.WELLS, params],
-    queryFn: () => getAllWells(params),
+    queryKey: [...QUERY_KEYS.WELLS, "public", params],
+    queryFn: () => getPublicWells(params),
   });
 };

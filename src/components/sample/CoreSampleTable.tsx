@@ -13,6 +13,7 @@ import CoreSampleSearch from "./CoreSampleSearch";
 import CoreSampleRockTypeFilter from "./CoreSampleRockTypeFilter";
 
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+import SkeletonTable from "@/components/ui/SkeletonTable";
 
 export default function CoreSampleTable() {
   const router = useRouter();
@@ -44,11 +45,7 @@ const [openModal, setOpenModal] =
   const { mutate: deleteMutate } = useDeleteCoreSample();
 
   if (isPending) {
-    return (
-      <p className="text-center py-10">
-        Loading samples...
-      </p>
-    );
+    return <SkeletonTable columns={6} />;
   }
 
   if (isError) {

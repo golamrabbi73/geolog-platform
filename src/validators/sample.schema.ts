@@ -12,6 +12,13 @@ export const coreSampleSchema = z.object({
   rockType: z.string().min(1, "Rock type is required."),
 
   description: z.string().optional(),
+
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Enter a valid image URL.")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type CoreSampleFormData = z.infer<typeof coreSampleSchema>;

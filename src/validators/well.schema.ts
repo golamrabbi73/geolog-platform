@@ -27,6 +27,13 @@ export const wellSchema = z.object({
   ]),
 
   description: z.string().optional(),
+
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Enter a valid image URL.")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type WellFormData = z.input<typeof wellSchema>;

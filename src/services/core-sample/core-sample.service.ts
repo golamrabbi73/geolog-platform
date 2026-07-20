@@ -26,6 +26,21 @@ export const getAllCoreSamples = async (
   return data;
 };
 
+// Get All (public, no auth, for the public explore page)
+export const getPublicCoreSamples = async (
+  params?: Record<string, unknown>
+): Promise<GetCoreSamplesResponse> => {
+  const { data } =
+    await axiosInstance.get<GetCoreSamplesResponse>(
+      API_ENDPOINTS.CORE_SAMPLES_PUBLIC,
+      {
+        params,
+      }
+    );
+
+  return data;
+};
+
 // Get Single
 export const getCoreSampleById = async (
   id: string

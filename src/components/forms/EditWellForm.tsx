@@ -51,6 +51,7 @@ export default function EditWellForm({
         depth: data.data.depth,
         status: data.data.status,
         description: data.data.description ?? "",
+        imageUrl: data.data.imageUrl ?? "",
       });
     }
   }, [data, reset]);
@@ -136,6 +137,13 @@ export default function EditWellForm({
         rows={4}
         error={errors.description?.message}
         {...register("description")}
+      />
+
+      <FormInput
+        label="Image URL (optional)"
+        placeholder="https://example.com/well-photo.jpg"
+        error={errors.imageUrl?.message}
+        {...register("imageUrl")}
       />
 
       <button

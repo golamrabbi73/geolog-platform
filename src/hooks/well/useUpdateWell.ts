@@ -7,6 +7,7 @@ import {
 
 import { updateWell } from "@/services/well/well.service";
 import type { UpdateWellPayload } from "@/services/well/well.types";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const useUpdateWell = () => {
   const queryClient = useQueryClient();
@@ -22,7 +23,7 @@ export const useUpdateWell = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["wells"],
+        queryKey: QUERY_KEYS.WELLS,
       });
     },
   });

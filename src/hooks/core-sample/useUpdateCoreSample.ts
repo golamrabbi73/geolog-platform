@@ -12,6 +12,7 @@ import {
 import type {
   UpdateCoreSamplePayload,
 } from "@/services/core-sample/core-sample.types";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const useUpdateCoreSample = () => {
   const queryClient = useQueryClient();
@@ -27,7 +28,7 @@ export const useUpdateCoreSample = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["core-samples"],
+        queryKey: QUERY_KEYS.SAMPLES,
       });
     },
   });

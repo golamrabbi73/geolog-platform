@@ -37,6 +37,25 @@ export const getMyWells = async (): Promise<GetWellsResponse> => {
   return data;
 };
 
+// Get Public Wells (no auth required, for the public explore page)
+export const getPublicWells = async (
+  params?: {
+    searchTerm?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }
+): Promise<GetWellsResponse> => {
+  const { data } = await axiosInstance.get<GetWellsResponse>(
+    API_ENDPOINTS.WELLS_PUBLIC,
+    {
+      params,
+    }
+  );
+
+  return data;
+};
+
 // Get Single Well (Future)
 export const getWellById = async (
   id: string

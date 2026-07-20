@@ -1,0 +1,1979 @@
+diff --git a/src/app/(public)/explore/page.tsx b/src/app/(public)/explore/page.tsx
+new file mode 100644
+index 0000000..03beb46
+--- /dev/null
++++ b/src/app/(public)/explore/page.tsx
+@@ -0,0 +1,294 @@
++"use client";
++
++import { useMemo, useState } from "react";
++import { useDebounce } from "use-debounce";
++import { MapPin, Layers } from "lucide-react";
++
++import { useGetPublicWells } from "@/hooks/well/useGetPublicWells";
++import { useGetPublicCoreSamples } from "@/hooks/core-sample/useGetPublicCoreSamples";
++
++import WellSearch from "@/components/well/WellSearch";
++import WellStatusFilter from "@/components/well/WellStatusFilter";
++import CoreSampleSearch from "@/components/sample/CoreSampleSearch";
++import CoreSampleRockTypeFilter from "@/components/sample/CoreSampleRockTypeFilter";
++
++import ItemCard from "@/components/ui/ItemCard";
++import SkeletonCard from "@/components/ui/SkeletonCard";
++
++type Tab = "wells" | "samples";
++type SortOption = "newest" | "oldest" | "name-asc" | "name-desc";
++
++export default function ExplorePage() {
++  const [tab, setTab] = useState<Tab>("wells");
++
++  const [page, setPage] = useState(1);
++  const limit = 8;
++
++  const [searchTerm, setSearchTerm] = useState("");
++  const [debouncedSearch] = useDebounce(searchTerm, 500);
++
++  // Well filters
++  const [status, setStatus] = useState("");
++  const [minDepth, setMinDepth] = useState("");
++
++  // Sample filters
++  const [rockType, setRockType] = useState("");
++  const [wellNameFilter, setWellNameFilter] = useState("");
++
++  const [sort, setSort] = useState<SortOption>("newest");
++
++  const wellsQuery = useGetPublicWells({
++    searchTerm: debouncedSearch,
++    status,
++    page,
++    limit,
++  });
++
++  const samplesQuery = useGetPublicCoreSamples({
++    searchTerm: debouncedSearch,
++    rockType,
++    wellName: wellNameFilter,
++    page,
++    limit,
++  });
++
++  const activeQuery = tab === "wells" ? wellsQuery : samplesQuery;
++  const { isPending, isError } = activeQuery;
++
++  const wells = useMemo(() => {
++    let list = wellsQuery.data?.data ?? [];
++
++    if (minDepth) {
++      list = list.filter((w) => w.depth >= Number(minDepth));
++    }
++
++    return [...list].sort((a, b) => {
++      if (sort === "name-asc") return a.wellName.localeCompare(b.wellName);
++      if (sort === "name-desc") return b.wellName.localeCompare(a.wellName);
++      if (sort === "oldest")
++        return (
++          new Date(a.createdAt).getTime() -
++          new Date(b.createdAt).getTime()
++        );
++      return (
++        new Date(b.createdAt).getTime() -
++        new Date(a.createdAt).getTime()
++      );
++    });
++  }, [wellsQuery.data, minDepth, sort]);
++
++  const samples = useMemo(() => {
++    const list = samplesQuery.data?.data ?? [];
++
++    return [...list].sort((a, b) => {
++      if (sort === "name-asc") return a.sampleId.localeCompare(b.sampleId);
++      if (sort === "name-desc") return b.sampleId.localeCompare(a.sampleId);
++      if (sort === "oldest")
++        return (
++          new Date(a.createdAt).getTime() -
++          new Date(b.createdAt).getTime()
++        );
++      return (
++        new Date(b.createdAt).getTime() -
++        new Date(a.createdAt).getTime()
++      );
++    });
++  }, [samplesQuery.data, sort]);
++
++  const meta = tab === "wells" ? wellsQuery.data?.meta : samplesQuery.data?.meta;
++
++  const switchTab = (next: Tab) => {
++    setTab(next);
++    setPage(1);
++  };
++
++  return (
++    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12 space-y-8">
++      <div>
++        <h1 className="text-3xl font-bold">Explore GeoLog</h1>
++        <p className="text-base-content/70 mt-1">
++          Browse wells and core samples across every field site — no
++          account required.
++        </p>
++      </div>
++
++      {/* Tabs */}
++      <div className="tabs tabs-boxed w-fit">
++        <button
++          className={`tab ${tab === "wells" ? "tab-active" : ""}`}
++          onClick={() => switchTab("wells")}
++        >
++          Wells
++        </button>
++
++        <button
++          className={`tab ${tab === "samples" ? "tab-active" : ""}`}
++          onClick={() => switchTab("samples")}
++        >
++          Core Samples
++        </button>
++      </div>
++
++      {/* Controls */}
++      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
++        {tab === "wells" ? (
++          <WellSearch
++            value={searchTerm}
++            onChange={(v) => {
++              setSearchTerm(v);
++              setPage(1);
++            }}
++          />
++        ) : (
++          <CoreSampleSearch
++            value={searchTerm}
++            onChange={(v) => {
++              setSearchTerm(v);
++              setPage(1);
++            }}
++          />
++        )}
++
++        {tab === "wells" ? (
++          <>
++            <WellStatusFilter
++              value={status}
++              onChange={(v) => {
++                setStatus(v);
++                setPage(1);
++              }}
++            />
++
++            <input
++              type="number"
++              placeholder="Min depth (m)"
++              className="input input-bordered w-full max-w-[10rem]"
++              value={minDepth}
++              onChange={(e) => setMinDepth(e.target.value)}
++            />
++          </>
++        ) : (
++          <>
++            <CoreSampleRockTypeFilter
++              value={rockType}
++              onChange={(v) => {
++                setRockType(v);
++                setPage(1);
++              }}
++            />
++
++            <input
++              type="text"
++              placeholder="Filter by well name"
++              className="input input-bordered w-full max-w-[12rem]"
++              value={wellNameFilter}
++              onChange={(e) => {
++                setWellNameFilter(e.target.value);
++                setPage(1);
++              }}
++            />
++          </>
++        )}
++
++        <select
++          className="select select-bordered lg:ml-auto"
++          value={sort}
++          onChange={(e) => setSort(e.target.value as SortOption)}
++        >
++          <option value="newest">Newest first</option>
++          <option value="oldest">Oldest first</option>
++          <option value="name-asc">Name (A–Z)</option>
++          <option value="name-desc">Name (Z–A)</option>
++        </select>
++      </div>
++
++      {/* Grid */}
++      {isPending ? (
++        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
++          {Array.from({ length: 8 }).map((_, i) => (
++            <SkeletonCard key={i} />
++          ))}
++        </div>
++      ) : isError ? (
++        <p className="text-error text-center py-16">
++          Failed to load data. Please try again.
++        </p>
++      ) : tab === "wells" ? (
++        wells.length === 0 ? (
++          <p className="text-center text-base-content/60 py-16">
++            No wells match your filters.
++          </p>
++        ) : (
++          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
++            {wells.map((well) => (
++              <ItemCard
++                key={well._id}
++                imageUrl={well.imageUrl}
++                title={well.wellName}
++                description={well.description || "No description provided."}
++                badge={well.status}
++                href={`/explore/wells/${well._id}`}
++                meta={[
++                  { icon: <MapPin size={14} />, label: well.location },
++                  {
++                    icon: <Layers size={14} />,
++                    label: `${well.depth} m depth`,
++                  },
++                ]}
++              />
++            ))}
++          </div>
++        )
++      ) : samples.length === 0 ? (
++        <p className="text-center text-base-content/60 py-16">
++          No core samples match your filters.
++        </p>
++      ) : (
++        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
++          {samples.map((sample) => (
++            <ItemCard
++              key={sample._id}
++              imageUrl={sample.imageUrl}
++              title={sample.sampleId}
++              description={sample.description || "No description provided."}
++              badge={sample.rockType}
++              href={`/explore/samples/${sample._id}`}
++              meta={[
++                { icon: <MapPin size={14} />, label: sample.wellName },
++                {
++                  icon: <Layers size={14} />,
++                  label: `${sample.depthFrom}m – ${sample.depthTo}m`,
++                },
++              ]}
++            />
++          ))}
++        </div>
++      )}
++
++      {/* Pagination */}
++      {meta && meta.totalPages > 1 && (
++        <div className="flex items-center justify-center gap-2 pt-4">
++          <button
++            className="btn btn-sm"
++            disabled={page <= 1}
++            onClick={() => setPage((p) => Math.max(1, p - 1))}
++          >
++            Previous
++          </button>
++
++          <span className="text-sm text-base-content/70">
++            Page {meta.page} of {meta.totalPages}
++          </span>
++
++          <button
++            className="btn btn-sm"
++            disabled={page >= meta.totalPages}
++            onClick={() => setPage((p) => p + 1)}
++          >
++            Next
++          </button>
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/src/app/(public)/explore/samples/[id]/page.tsx b/src/app/(public)/explore/samples/[id]/page.tsx
+new file mode 100644
+index 0000000..2501d1d
+--- /dev/null
++++ b/src/app/(public)/explore/samples/[id]/page.tsx
+@@ -0,0 +1,15 @@
++import CoreSampleDetails from "@/components/sample/CoreSampleDetails";
++
++type Props = {
++  params: Promise<{ id: string }>;
++};
++
++export default async function PublicCoreSampleDetailsPage({ params }: Props) {
++  const { id } = await params;
++
++  return (
++    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
++      <CoreSampleDetails id={id} />
++    </div>
++  );
++}
+diff --git a/src/app/(public)/explore/wells/[id]/page.tsx b/src/app/(public)/explore/wells/[id]/page.tsx
+new file mode 100644
+index 0000000..349f79d
+--- /dev/null
++++ b/src/app/(public)/explore/wells/[id]/page.tsx
+@@ -0,0 +1,15 @@
++import WellDetails from "@/components/well/WellDetails";
++
++type Props = {
++  params: Promise<{ id: string }>;
++};
++
++export default async function PublicWellDetailsPage({ params }: Props) {
++  const { id } = await params;
++
++  return (
++    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
++      <WellDetails id={id} />
++    </div>
++  );
++}
+diff --git a/src/app/(public)/page.tsx b/src/app/(public)/page.tsx
+index 1322517..31ed336 100644
+--- a/src/app/(public)/page.tsx
++++ b/src/app/(public)/page.tsx
+@@ -4,22 +4,20 @@ import Features from "@/components/home/Features";
+ import Hero from "@/components/home/Hero";
+ import HowItWorks from "@/components/home/HowItWorks";
+ import Statistics from "@/components/home/Statistics";
++import TeamRoles from "@/components/home/TeamRoles";
+ import WhyGeoLog from "@/components/home/WhyGeoLog";
+-// import Footer from "@/components/shared/Footer";
+-// import Navbar from "@/components/shared/Navbar";
+ 
+ export default function HomePage() {
+   return (
+     <>
+-      {/* <Navbar /> */}
+       <Hero />
+       <Features />
+       <HowItWorks />
+       <Statistics />
+       <WhyGeoLog />
++      <TeamRoles />
+       <FAQ />
+       <CTA />
+-      {/* <Footer /> */}
+     </>
+   );
+ }
+\ No newline at end of file
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 06c30ba..dfdbc83 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -1,6 +1,53 @@
+ @import "tailwindcss";
+-@plugin "daisyui";
++@plugin "daisyui" {
++  themes: geolog --default;
++}
++
++@plugin "daisyui/theme" {
++  name: "geolog";
++  default: true;
++  color-scheme: light;
++
++  /* Base surface colors (neutral grays, not counted as brand colors) */
++  --color-base-100: #ffffff;
++  --color-base-200: #f4f5f7;
++  --color-base-300: #e5e7eb;
++  --color-base-content: #1f2937;
++
++  /* Brand palette: max 3 primary colors */
++  --color-primary: #2563eb; /* blue - main brand color */
++  --color-primary-content: #ffffff;
++
++  --color-secondary: #0d9488; /* teal - supporting accent */
++  --color-secondary-content: #ffffff;
++
++  --color-accent: #7c3aed; /* violet - highlight accent */
++  --color-accent-content: #ffffff;
++
++  /* Neutral (optional per design rules) */
++  --color-neutral: #374151;
++  --color-neutral-content: #f9fafb;
++
++  /* Functional/system colors (not part of the 3-color brand palette) */
++  --color-info: #0ea5e9;
++  --color-info-content: #ffffff;
++  --color-success: #16a34a;
++  --color-success-content: #ffffff;
++  --color-warning: #f59e0b;
++  --color-warning-content: #ffffff;
++  --color-error: #dc2626;
++  --color-error-content: #ffffff;
++
++  --radius-selector: 0.75rem;
++  --radius-field: 0.5rem;
++  --radius-box: 1rem;
++  --size-selector: 0.25rem;
++  --size-field: 0.25rem;
++  --border: 1px;
++  --depth: 0;
++  --noise: 0;
++}
+ 
+ body {
+   font-family: Arial, Helvetica, sans-serif;
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/forms/CoreSampleForm.tsx b/src/components/forms/CoreSampleForm.tsx
+index 4d7bfe6..9f4567a 100644
+--- a/src/components/forms/CoreSampleForm.tsx
++++ b/src/components/forms/CoreSampleForm.tsx
+@@ -36,6 +36,7 @@ export default function CoreSampleForm() {
+       depthTo: 0,
+       rockType: "",
+       description: "",
++      imageUrl: "",
+     },
+   });
+ 
+@@ -115,6 +116,13 @@ export default function CoreSampleForm() {
+         {...register("description")}
+       />
+ 
++      <FormInput
++        label="Image URL (optional)"
++        placeholder="https://example.com/sample-photo.jpg"
++        error={errors.imageUrl?.message}
++        {...register("imageUrl")}
++      />
++
+       <button
+         type="submit"
+         disabled={isPending}
+diff --git a/src/components/forms/EditCoreSampleForm.tsx b/src/components/forms/EditCoreSampleForm.tsx
+index d481928..31ff3a9 100644
+--- a/src/components/forms/EditCoreSampleForm.tsx
++++ b/src/components/forms/EditCoreSampleForm.tsx
+@@ -50,6 +50,7 @@ export default function EditCoreSampleForm({
+         depthTo: data.data.depthTo,
+         rockType: data.data.rockType,
+         description: data.data.description ?? "",
++        imageUrl: data.data.imageUrl ?? "",
+       });
+     }
+   }, [data, reset]);
+@@ -126,6 +127,13 @@ export default function EditCoreSampleForm({
+         {...register("description")}
+       />
+ 
++      <FormInput
++        label="Image URL (optional)"
++        placeholder="https://example.com/sample-photo.jpg"
++        error={errors.imageUrl?.message}
++        {...register("imageUrl")}
++      />
++
+       <button
+         type="submit"
+         disabled={isUpdating}
+diff --git a/src/components/forms/EditWellForm.tsx b/src/components/forms/EditWellForm.tsx
+index 61f95b6..1f9e33e 100644
+--- a/src/components/forms/EditWellForm.tsx
++++ b/src/components/forms/EditWellForm.tsx
+@@ -51,6 +51,7 @@ export default function EditWellForm({
+         depth: data.data.depth,
+         status: data.data.status,
+         description: data.data.description ?? "",
++        imageUrl: data.data.imageUrl ?? "",
+       });
+     }
+   }, [data, reset]);
+@@ -138,6 +139,13 @@ export default function EditWellForm({
+         {...register("description")}
+       />
+ 
++      <FormInput
++        label="Image URL (optional)"
++        placeholder="https://example.com/well-photo.jpg"
++        error={errors.imageUrl?.message}
++        {...register("imageUrl")}
++      />
++
+       <button
+         type="submit"
+         disabled={isUpdating}
+diff --git a/src/components/forms/LoginForm.tsx b/src/components/forms/LoginForm.tsx
+index c249fd2..6c3a2c7 100644
+--- a/src/components/forms/LoginForm.tsx
++++ b/src/components/forms/LoginForm.tsx
+@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
+ 
+ import FormInput from "@/components/ui/FormInput";
+ 
++import toast from "react-hot-toast";
++
+ import {
+   loginSchema,
+   type LoginFormData,
+@@ -25,6 +27,7 @@ export default function LoginForm() {
+   const {
+     register,
+     handleSubmit,
++    setValue,
+     formState: { errors },
+   } = useForm<LoginFormData>({
+     resolver: zodResolver(loginSchema),
+@@ -34,6 +37,11 @@ export default function LoginForm() {
+     },
+   });
+ 
++  const fillDemoCredentials = () => {
++    setValue("email", "demo.engineer@geolog.app");
++    setValue("password", "Demo@1234");
++  };
++
+   const onSubmit = (data: LoginFormData) => {
+     mutate(data, {
+       onSuccess: (response) => {
+@@ -50,6 +58,7 @@ export default function LoginForm() {
+ 
+       onError: (error) => {
+         console.error(error);
++        toast.error("Invalid email or password.");
+       },
+     });
+   };
+@@ -77,6 +86,14 @@ export default function LoginForm() {
+         {...register("password")}
+       />
+ 
++      <button
++        type="button"
++        onClick={fillDemoCredentials}
++        className="btn btn-outline btn-secondary w-full"
++      >
++        Use Demo Credentials
++      </button>
++
+       <button
+         type="submit"
+         disabled={isPending}
+diff --git a/src/components/forms/WellForm.tsx b/src/components/forms/WellForm.tsx
+index 93d1e0d..6262f61 100644
+--- a/src/components/forms/WellForm.tsx
++++ b/src/components/forms/WellForm.tsx
+@@ -36,6 +36,7 @@ export default function WellForm() {
+       depth: 0,
+       status: "planned",
+       description: "",
++      imageUrl: "",
+     },
+   });
+ 
+@@ -125,6 +126,14 @@ export default function WellForm() {
+         {...register("description")}
+       />
+ 
++      {/* Image URL */}
++      <FormInput
++        label="Image URL (optional)"
++        placeholder="https://example.com/well-photo.jpg"
++        error={errors.imageUrl?.message}
++        {...register("imageUrl")}
++      />
++
+       {/* Submit Button */}
+       <button
+         type="submit"
+diff --git a/src/components/home/TeamRoles.tsx b/src/components/home/TeamRoles.tsx
+new file mode 100644
+index 0000000..d089a9b
+--- /dev/null
++++ b/src/components/home/TeamRoles.tsx
+@@ -0,0 +1,62 @@
++import { HardHat, Users2, ShieldCheck } from "lucide-react";
++
++const roles = [
++  {
++    icon: HardHat,
++    title: "Field Engineer",
++    description:
++      "Log core samples on-site, attach depth and rock-type data, and keep a personal record of every sample collected.",
++  },
++  {
++    icon: Users2,
++    title: "Manager",
++    description:
++      "Oversee wells across the operation, review team submissions, and keep well status up to date from planning to completion.",
++  },
++  {
++    icon: ShieldCheck,
++    title: "Admin",
++    description:
++      "Full visibility across wells and samples, with the ability to manage records and keep the whole dataset consistent.",
++  },
++];
++
++export default function TeamRoles() {
++  return (
++    <section className="py-24 bg-base-100">
++      <div className="max-w-7xl mx-auto px-4 lg:px-8">
++        <div className="text-center max-w-2xl mx-auto mb-16">
++          <h2 className="text-4xl font-bold">Built for Every Role</h2>
++
++          <p className="mt-5 text-base-content/70">
++            GeoLog adapts to how your team actually works, from field
++            data collection to organization-wide oversight.
++          </p>
++        </div>
++
++        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
++          {roles.map((role) => (
++            <div
++              key={role.title}
++              className="card bg-base-100 border border-base-300 rounded-2xl"
++            >
++              <div className="card-body items-center text-center">
++                <div className="p-3 rounded-full bg-primary/10 text-primary">
++                  <role.icon size={28} />
++                </div>
++
++                <h3 className="text-xl font-semibold mt-3">
++                  {role.title}
++                </h3>
++
++                <p className="text-base-content/70 mt-2">
++                  {role.description}
++                </p>
++              </div>
++            </div>
++          ))}
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/src/components/sample/CoreSampleDetails.tsx b/src/components/sample/CoreSampleDetails.tsx
+index 2f92591..809d824 100644
+--- a/src/components/sample/CoreSampleDetails.tsx
++++ b/src/components/sample/CoreSampleDetails.tsx
+@@ -1,61 +1,141 @@
+ "use client";
+ 
++import Link from "next/link";
++import { Layers, Ruler, Mountain } from "lucide-react";
++
+ import { useGetCoreSample } from "@/hooks/core-sample/useGetCoreSample";
++import { useGetPublicCoreSamples } from "@/hooks/core-sample/useGetPublicCoreSamples";
+ 
+ type Props = {
+   id: string;
+ };
+ 
+-export default function CoreSampleDetails({
+-  id,
+-}: Props) {
+-  const { data, isPending, isError } =
+-    useGetCoreSample(id);
++export default function CoreSampleDetails({ id }: Props) {
++  const { data, isPending, isError } = useGetCoreSample(id);
++
++  const { data: relatedData } = useGetPublicCoreSamples({
++    limit: 4,
++  });
+ 
+   if (isPending) {
+-    return <p>Loading...</p>;
++    return (
++      <div className="max-w-4xl mx-auto animate-pulse space-y-4">
++        <div className="h-64 w-full rounded-2xl bg-base-300" />
++        <div className="h-8 w-1/2 rounded bg-base-300" />
++        <div className="h-4 w-full rounded bg-base-300" />
++      </div>
++    );
+   }
+ 
+   if (isError || !data) {
+-    return <p>Core sample not found.</p>;
++    return (
++      <p className="text-center py-16 text-base-content/70">
++        Core sample not found.
++      </p>
++    );
+   }
+ 
+   const sample = data.data;
+ 
++  const related = (relatedData?.data ?? [])
++    .filter((s) => s._id !== sample._id)
++    .slice(0, 3);
++
+   return (
+-    <div className="max-w-3xl mx-auto">
+-      <div className="card bg-base-100 shadow">
+-        <div className="card-body">
+-          <h1 className="text-3xl font-bold">
+-            {sample.sampleId}
+-          </h1>
++    <div className="max-w-4xl mx-auto space-y-8">
++      {/* Media */}
++      <div className="h-64 md:h-80 w-full rounded-2xl overflow-hidden bg-base-200">
++        {sample.imageUrl ? (
++          // eslint-disable-next-line @next/next/no-img-element
++          <img
++            src={sample.imageUrl}
++            alt={sample.sampleId}
++            className="h-full w-full object-cover"
++          />
++        ) : (
++          <div className="h-full w-full flex items-center justify-center text-base-content/40">
++            <Layers size={48} />
++          </div>
++        )}
++      </div>
+ 
+-          <p>
+-            <strong>Well Name:</strong>{" "}
+-            {sample.wellName}
+-          </p>
++      <div className="flex items-start justify-between gap-4">
++        <h1 className="text-3xl font-bold">{sample.sampleId}</h1>
++        <span className="badge badge-primary badge-lg capitalize shrink-0">
++          {sample.rockType}
++        </span>
++      </div>
+ 
+-          <p>
+-            <strong>Depth From:</strong>{" "}
+-            {sample.depthFrom} m
++      {/* Overview */}
++      <section className="card bg-base-100 border border-base-300 rounded-2xl">
++        <div className="card-body">
++          <h2 className="card-title text-lg">Overview</h2>
++          <p className="text-base-content/80">
++            {sample.description || "No description provided."}
+           </p>
++        </div>
++      </section>
+ 
+-          <p>
+-            <strong>Depth To:</strong>{" "}
+-            {sample.depthTo} m
+-          </p>
++      {/* Specifications */}
++      <section className="card bg-base-100 border border-base-300 rounded-2xl">
++        <div className="card-body">
++          <h2 className="card-title text-lg">Key Information</h2>
+ 
+-          <p>
+-            <strong>Rock Type:</strong>{" "}
+-            {sample.rockType}
+-          </p>
++          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
++            <div className="flex items-center gap-3">
++              <Mountain className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Well Name</p>
++                <p className="font-medium">{sample.wellName}</p>
++              </div>
++            </div>
+ 
+-          <p>
+-            <strong>Description:</strong>{" "}
+-            {sample.description}
+-          </p>
++            <div className="flex items-center gap-3">
++              <Layers className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Rock Type</p>
++                <p className="font-medium">{sample.rockType}</p>
++              </div>
++            </div>
++
++            <div className="flex items-center gap-3">
++              <Ruler className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Depth Range</p>
++                <p className="font-medium">
++                  {sample.depthFrom}m &ndash; {sample.depthTo}m
++                </p>
++              </div>
++            </div>
++          </div>
+         </div>
+-      </div>
++      </section>
++
++      {/* Related samples */}
++      {related.length > 0 && (
++        <section>
++          <h2 className="text-lg font-semibold mb-4">Related Samples</h2>
++
++          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
++            {related.map((item) => (
++              <Link
++                key={item._id}
++                href={`/samples/${item._id}`}
++                className="card bg-base-100 border border-base-300 rounded-2xl hover:shadow-md transition-shadow"
++              >
++                <div className="card-body p-4">
++                  <p className="font-medium line-clamp-1">
++                    {item.sampleId}
++                  </p>
++                  <p className="text-xs text-base-content/60 line-clamp-1">
++                    {item.wellName}
++                  </p>
++                </div>
++              </Link>
++            ))}
++          </div>
++        </section>
++      )}
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/sample/CoreSampleTable.tsx b/src/components/sample/CoreSampleTable.tsx
+index 527f411..7a36578 100644
+--- a/src/components/sample/CoreSampleTable.tsx
++++ b/src/components/sample/CoreSampleTable.tsx
+@@ -13,6 +13,7 @@ import CoreSampleSearch from "./CoreSampleSearch";
+ import CoreSampleRockTypeFilter from "./CoreSampleRockTypeFilter";
+ 
+ import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
++import SkeletonTable from "@/components/ui/SkeletonTable";
+ 
+ export default function CoreSampleTable() {
+   const router = useRouter();
+@@ -44,11 +45,7 @@ const [openModal, setOpenModal] =
+   const { mutate: deleteMutate } = useDeleteCoreSample();
+ 
+   if (isPending) {
+-    return (
+-      <p className="text-center py-10">
+-        Loading samples...
+-      </p>
+-    );
++    return <SkeletonTable columns={6} />;
+   }
+ 
+   if (isError) {
+diff --git a/src/components/shared/Navbar.tsx b/src/components/shared/Navbar.tsx
+index 32dfd12..af45328 100644
+--- a/src/components/shared/Navbar.tsx
++++ b/src/components/shared/Navbar.tsx
+@@ -33,6 +33,7 @@ export default function Navbar() {
+         <div className="navbar-center hidden lg:flex">
+           <ul className="menu menu-horizontal gap-2">
+             <li><Link href="/">Home</Link></li>
++            <li><Link href="/explore">Explore</Link></li>
+             <li><Link href="/#features">Features</Link></li>
+             <li><Link href="/#statistics">Statistics</Link></li>
+             <li><Link href="/about">About</Link></li>
+@@ -118,6 +119,7 @@ export default function Navbar() {
+             <ul className="menu dropdown-content mt-3 w-64 rounded-box bg-base-100 shadow border z-[100]">
+ 
+               <li><Link href="/">Home</Link></li>
++              <li><Link href="/explore">Explore</Link></li>
+               <li><Link href="/#features">Features</Link></li>
+               <li><Link href="/#statistics">Statistics</Link></li>
+               <li><Link href="/about">About</Link></li>
+diff --git a/src/components/ui/ItemCard.tsx b/src/components/ui/ItemCard.tsx
+new file mode 100644
+index 0000000..c4389e9
+--- /dev/null
++++ b/src/components/ui/ItemCard.tsx
+@@ -0,0 +1,86 @@
++import Link from "next/link";
++import { MapPin, Layers } from "lucide-react";
++
++export type ItemCardMeta = {
++  icon?: React.ReactNode;
++  label: string;
++};
++
++type Props = {
++  imageUrl?: string;
++  title: string;
++  description: string;
++  meta: ItemCardMeta[];
++  badge?: string;
++  href: string;
++};
++
++/**
++ * Reusable listing card.
++ * Used by both the public Explore page (wells + core samples) so every
++ * card in the app shares the same height, radius, and layout.
++ */
++export default function ItemCard({
++  imageUrl,
++  title,
++  description,
++  meta,
++  badge,
++  href,
++}: Props) {
++  return (
++    <div className="card h-[420px] w-full bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden flex flex-col">
++      <figure className="h-44 w-full shrink-0 bg-base-200">
++        {imageUrl ? (
++          // eslint-disable-next-line @next/next/no-img-element
++          <img
++            src={imageUrl}
++            alt={title}
++            className="h-full w-full object-cover"
++          />
++        ) : (
++          <div className="h-full w-full flex items-center justify-center text-base-content/40">
++            <Layers size={40} />
++          </div>
++        )}
++      </figure>
++
++      <div className="card-body flex-1 flex flex-col gap-2 p-5">
++        <div className="flex items-start justify-between gap-2">
++          <h3 className="font-semibold text-lg line-clamp-1">
++            {title}
++          </h3>
++
++          {badge && (
++            <span className="badge badge-primary badge-outline shrink-0">
++              {badge}
++            </span>
++          )}
++        </div>
++
++        <p className="text-sm text-base-content/70 line-clamp-2">
++          {description}
++        </p>
++
++        <div className="mt-auto space-y-1 pt-2">
++          {meta.map((item, idx) => (
++            <div
++              key={idx}
++              className="flex items-center gap-2 text-xs text-base-content/60"
++            >
++              {item.icon ?? <MapPin size={14} />}
++              <span className="line-clamp-1">{item.label}</span>
++            </div>
++          ))}
++
++          <Link
++            href={href}
++            className="btn btn-primary btn-sm w-full mt-3"
++          >
++            View Details
++          </Link>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/ui/SkeletonCard.tsx b/src/components/ui/SkeletonCard.tsx
+new file mode 100644
+index 0000000..ce0cec1
+--- /dev/null
++++ b/src/components/ui/SkeletonCard.tsx
+@@ -0,0 +1,19 @@
++export default function SkeletonCard() {
++  return (
++    <div className="card h-[420px] w-full bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden flex flex-col animate-pulse">
++      <div className="h-44 w-full shrink-0 bg-base-300" />
++
++      <div className="card-body flex-1 flex flex-col gap-3 p-5">
++        <div className="h-5 w-2/3 rounded bg-base-300" />
++        <div className="h-3 w-full rounded bg-base-300" />
++        <div className="h-3 w-5/6 rounded bg-base-300" />
++
++        <div className="mt-auto space-y-2 pt-2">
++          <div className="h-3 w-1/2 rounded bg-base-300" />
++          <div className="h-3 w-1/3 rounded bg-base-300" />
++          <div className="h-8 w-full rounded bg-base-300 mt-3" />
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/ui/SkeletonTable.tsx b/src/components/ui/SkeletonTable.tsx
+new file mode 100644
+index 0000000..6b8452e
+--- /dev/null
++++ b/src/components/ui/SkeletonTable.tsx
+@@ -0,0 +1,27 @@
++type Props = {
++  rows?: number;
++  columns?: number;
++};
++
++export default function SkeletonTable({
++  rows = 6,
++  columns = 5,
++}: Props) {
++  return (
++    <div className="overflow-x-auto rounded-2xl border border-base-300">
++      <table className="table">
++        <tbody>
++          {Array.from({ length: rows }).map((_, rowIdx) => (
++            <tr key={rowIdx} className="animate-pulse">
++              {Array.from({ length: columns }).map((_, colIdx) => (
++                <td key={colIdx} className="py-4">
++                  <div className="h-4 w-full max-w-[140px] rounded bg-base-300" />
++                </td>
++              ))}
++            </tr>
++          ))}
++        </tbody>
++      </table>
++    </div>
++  );
++}
+diff --git a/src/components/well/WellDetails.tsx b/src/components/well/WellDetails.tsx
+index cd13974..d39ae0c 100644
+--- a/src/components/well/WellDetails.tsx
++++ b/src/components/well/WellDetails.tsx
+@@ -1,61 +1,147 @@
+ "use client";
+ 
++import Link from "next/link";
++import { MapPin, Gauge, Building2, Activity } from "lucide-react";
++
+ import { useGetWell } from "@/hooks/well/useGetWell";
++import { useGetPublicWells } from "@/hooks/well/useGetPublicWells";
+ 
+ type Props = {
+   id: string;
+ };
+ 
+-export default function WellDetails({
+-  id,
+-}: Props) {
+-  const { data, isPending, isError } =
+-    useGetWell(id);
++export default function WellDetails({ id }: Props) {
++  const { data, isPending, isError } = useGetWell(id);
++
++  const { data: relatedData } = useGetPublicWells({
++    limit: 4,
++  });
+ 
+   if (isPending) {
+-    return <p>Loading...</p>;
++    return (
++      <div className="max-w-4xl mx-auto animate-pulse space-y-4">
++        <div className="h-64 w-full rounded-2xl bg-base-300" />
++        <div className="h-8 w-1/2 rounded bg-base-300" />
++        <div className="h-4 w-full rounded bg-base-300" />
++      </div>
++    );
+   }
+ 
+   if (isError || !data) {
+-    return <p>Well not found.</p>;
++    return (
++      <p className="text-center py-16 text-base-content/70">
++        Well not found.
++      </p>
++    );
+   }
+ 
+   const well = data.data;
+ 
++  const related = (relatedData?.data ?? [])
++    .filter((w) => w._id !== well._id)
++    .slice(0, 3);
++
+   return (
+-    <div className="max-w-3xl mx-auto">
+-      <div className="card bg-base-100 shadow">
+-        <div className="card-body">
+-          <h1 className="text-3xl font-bold">
+-            {well.wellName}
+-          </h1>
++    <div className="max-w-4xl mx-auto space-y-8">
++      {/* Media */}
++      <div className="h-64 md:h-80 w-full rounded-2xl overflow-hidden bg-base-200">
++        {well.imageUrl ? (
++          // eslint-disable-next-line @next/next/no-img-element
++          <img
++            src={well.imageUrl}
++            alt={well.wellName}
++            className="h-full w-full object-cover"
++          />
++        ) : (
++          <div className="h-full w-full flex items-center justify-center text-base-content/40">
++            <Gauge size={48} />
++          </div>
++        )}
++      </div>
+ 
+-          <p>
+-            <strong>Location:</strong>{" "}
+-            {well.location}
+-          </p>
++      <div className="flex items-start justify-between gap-4">
++        <h1 className="text-3xl font-bold">{well.wellName}</h1>
++        <span className="badge badge-primary badge-lg capitalize shrink-0">
++          {well.status}
++        </span>
++      </div>
+ 
+-          <p>
+-            <strong>Operator:</strong>{" "}
+-            {well.operator}
++      {/* Overview */}
++      <section className="card bg-base-100 border border-base-300 rounded-2xl">
++        <div className="card-body">
++          <h2 className="card-title text-lg">Overview</h2>
++          <p className="text-base-content/80">
++            {well.description || "No description provided."}
+           </p>
++        </div>
++      </section>
+ 
+-          <p>
+-            <strong>Depth:</strong>{" "}
+-            {well.depth} m
+-          </p>
++      {/* Specifications */}
++      <section className="card bg-base-100 border border-base-300 rounded-2xl">
++        <div className="card-body">
++          <h2 className="card-title text-lg">Key Information</h2>
+ 
+-          <p>
+-            <strong>Status:</strong>{" "}
+-            {well.status}
+-          </p>
++          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
++            <div className="flex items-center gap-3">
++              <MapPin className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Location</p>
++                <p className="font-medium">{well.location}</p>
++              </div>
++            </div>
+ 
+-          <p>
+-            <strong>Description:</strong>{" "}
+-            {well.description}
+-          </p>
++            <div className="flex items-center gap-3">
++              <Building2 className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Operator</p>
++                <p className="font-medium">{well.operator}</p>
++              </div>
++            </div>
++
++            <div className="flex items-center gap-3">
++              <Gauge className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Depth</p>
++                <p className="font-medium">{well.depth} m</p>
++              </div>
++            </div>
++
++            <div className="flex items-center gap-3">
++              <Activity className="text-primary" size={20} />
++              <div>
++                <p className="text-xs text-base-content/60">Status</p>
++                <p className="font-medium capitalize">{well.status}</p>
++              </div>
++            </div>
++          </div>
+         </div>
+-      </div>
++      </section>
++
++      {/* Related wells */}
++      {related.length > 0 && (
++        <section>
++          <h2 className="text-lg font-semibold mb-4">Related Wells</h2>
++
++          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
++            {related.map((item) => (
++              <Link
++                key={item._id}
++                href={`/wells/${item._id}`}
++                className="card bg-base-100 border border-base-300 rounded-2xl hover:shadow-md transition-shadow"
++              >
++                <div className="card-body p-4">
++                  <p className="font-medium line-clamp-1">
++                    {item.wellName}
++                  </p>
++                  <p className="text-xs text-base-content/60 line-clamp-1">
++                    {item.location}
++                  </p>
++                </div>
++              </Link>
++            ))}
++          </div>
++        </section>
++      )}
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/well/WellTable.tsx b/src/components/well/WellTable.tsx
+index 692fc39..beca41c 100644
+--- a/src/components/well/WellTable.tsx
++++ b/src/components/well/WellTable.tsx
+@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
+ 
+ 
+ import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
++import SkeletonTable from "@/components/ui/SkeletonTable";
+ 
+ export default function WellTable() {
+   const router = useRouter();
+@@ -45,11 +46,7 @@ const [openModal, setOpenModal] =
+   const { mutate: deleteMutate } = useDeleteWell();
+ 
+   if (isPending) {
+-    return (
+-      <p className="text-center py-10">
+-        Loading wells...
+-      </p>
+-    );
++    return <SkeletonTable columns={6} />;
+   }
+ 
+   if (isError) {
+diff --git a/src/constants/api.ts b/src/constants/api.ts
+index 1b4cc86..f80181a 100644
+--- a/src/constants/api.ts
++++ b/src/constants/api.ts
+@@ -2,8 +2,10 @@ export const API_ENDPOINTS = {
+   USERS: "/users",
+ 
+   CORE_SAMPLES: "/core-samples",
++  CORE_SAMPLES_PUBLIC: "/core-samples/public",
+ 
+   WELLS: "/wells",
++  WELLS_PUBLIC: "/wells/public",
+ 
+   ANALYTICS: "/analytics/dashboard",
+ } as const;
+\ No newline at end of file
+diff --git a/src/constants/queryKeys.ts b/src/constants/queryKeys.ts
+index 439e12a..baa241a 100644
+--- a/src/constants/queryKeys.ts
++++ b/src/constants/queryKeys.ts
+@@ -1,7 +1,12 @@
+ export const QUERY_KEYS = {
+-  ME: ["me"],
+-  USERS: ["users"],
+-  WELLS: ["wells"],
+-  SAMPLES: ["samples"],
+-  ANALYTICS: ["analytics"],
+-} as const;
+\ No newline at end of file
++  ME: ["me"] as const,
++  PROFILE: ["profile"] as const,
++
++  WELLS: ["wells"] as const,
++  WELL: (id: string) => ["wells", id] as const,
++
++  SAMPLES: ["core-samples"] as const,
++  SAMPLE: (id: string) => ["core-samples", id] as const,
++
++  ANALYTICS: ["dashboard-analytics"] as const,
++} as const;
+diff --git a/src/hooks/analytics/useDashboardAnalytics.ts b/src/hooks/analytics/useDashboardAnalytics.ts
+index aa418ba..f4a8498 100644
+--- a/src/hooks/analytics/useDashboardAnalytics.ts
++++ b/src/hooks/analytics/useDashboardAnalytics.ts
+@@ -3,10 +3,11 @@
+ import { useQuery } from "@tanstack/react-query";
+ 
+ import { getDashboardAnalytics } from "@/services/analytics/analytics.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useDashboardAnalytics = () => {
+   return useQuery({
+-    queryKey: ["dashboard-analytics"],
++    queryKey: QUERY_KEYS.ANALYTICS,
+     queryFn: getDashboardAnalytics,
+   });
+ };
+\ No newline at end of file
+diff --git a/src/hooks/auth/use-login.ts b/src/hooks/auth/use-login.ts
+deleted file mode 100644
+index ab6239c..0000000
+--- a/src/hooks/auth/use-login.ts
++++ /dev/null
+@@ -1,10 +0,0 @@
+-"use client";
+-
+-import { useMutation } from "@tanstack/react-query";
+-import { loginUser } from "@/services/auth";
+-
+-export const useLogin = () => {
+-  return useMutation({
+-    mutationFn: loginUser,
+-  });
+-};
+\ No newline at end of file
+diff --git a/src/hooks/auth/use-logout.ts b/src/hooks/auth/use-logout.ts
+deleted file mode 100644
+index 3ce3a0a..0000000
+--- a/src/hooks/auth/use-logout.ts
++++ /dev/null
+@@ -1,10 +0,0 @@
+-"use client";
+-
+-import { useMutation } from "@tanstack/react-query";
+-import { logoutUser } from "@/services/auth";
+-
+-export const useLogout = () => {
+-  return useMutation({
+-    mutationFn: logoutUser,
+-  });
+-};
+\ No newline at end of file
+diff --git a/src/hooks/auth/use-me.ts b/src/hooks/auth/use-me.ts
+deleted file mode 100644
+index bb3cb2a..0000000
+--- a/src/hooks/auth/use-me.ts
++++ /dev/null
+@@ -1,11 +0,0 @@
+-"use client";
+-
+-import { useQuery } from "@tanstack/react-query";
+-import { getMe } from "@/services/auth";
+-
+-export const useMe = () => {
+-  return useQuery({
+-    queryKey: ["me"],
+-    queryFn: getMe,
+-  });
+-};
+\ No newline at end of file
+diff --git a/src/hooks/auth/use-register.ts b/src/hooks/auth/use-register.ts
+deleted file mode 100644
+index 5bfa160..0000000
+--- a/src/hooks/auth/use-register.ts
++++ /dev/null
+@@ -1,10 +0,0 @@
+-"use client";
+-
+-import { useMutation } from "@tanstack/react-query";
+-import { registerUser } from "@/services/auth";
+-
+-export const useRegister = () => {
+-  return useMutation({
+-    mutationFn: registerUser,
+-  });
+-};
+\ No newline at end of file
+diff --git a/src/hooks/auth/useMe.ts b/src/hooks/auth/useMe.ts
+index 759eb25..a4c160f 100644
+--- a/src/hooks/auth/useMe.ts
++++ b/src/hooks/auth/useMe.ts
+@@ -2,10 +2,11 @@
+ 
+ import { useQuery } from "@tanstack/react-query";
+ import { getMe } from "@/services/auth/auth.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useMe = () => {
+   return useQuery({
+-    queryKey: ["me"],
++    queryKey: QUERY_KEYS.ME,
+     queryFn: getMe,
+     retry: false,
+     enabled: false,
+diff --git a/src/hooks/core-sample/useCreateCoreSample.ts b/src/hooks/core-sample/useCreateCoreSample.ts
+index c8fb243..909b28a 100644
+--- a/src/hooks/core-sample/useCreateCoreSample.ts
++++ b/src/hooks/core-sample/useCreateCoreSample.ts
+@@ -6,6 +6,7 @@ import {
+ } from "@tanstack/react-query";
+ 
+ import { createCoreSample } from "@/services/core-sample/core-sample.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useCreateCoreSample = () => {
+   const queryClient = useQueryClient();
+@@ -15,7 +16,7 @@ export const useCreateCoreSample = () => {
+ 
+     onSuccess: () => {
+       queryClient.invalidateQueries({
+-        queryKey: ["core-samples"],
++        queryKey: QUERY_KEYS.SAMPLES,
+       });
+     },
+   });
+diff --git a/src/hooks/core-sample/useDeleteCoreSample.ts b/src/hooks/core-sample/useDeleteCoreSample.ts
+index 1bc0a16..da5305e 100644
+--- a/src/hooks/core-sample/useDeleteCoreSample.ts
++++ b/src/hooks/core-sample/useDeleteCoreSample.ts
+@@ -8,6 +8,7 @@ import {
+ import {
+   deleteCoreSample,
+ } from "@/services/core-sample/core-sample.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useDeleteCoreSample = () => {
+   const queryClient = useQueryClient();
+@@ -17,7 +18,7 @@ export const useDeleteCoreSample = () => {
+ 
+     onSuccess: () => {
+       queryClient.invalidateQueries({
+-        queryKey: ["core-samples"],
++        queryKey: QUERY_KEYS.SAMPLES,
+       });
+     },
+   });
+diff --git a/src/hooks/core-sample/useGetCoreSample.ts b/src/hooks/core-sample/useGetCoreSample.ts
+index 7c7a383..38864ac 100644
+--- a/src/hooks/core-sample/useGetCoreSample.ts
++++ b/src/hooks/core-sample/useGetCoreSample.ts
+@@ -3,12 +3,13 @@
+ import { useQuery } from "@tanstack/react-query";
+ 
+ import { getCoreSampleById } from "@/services/core-sample/core-sample.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useGetCoreSample = (
+   id: string
+ ) => {
+   return useQuery({
+-    queryKey: ["core-sample", id],
++    queryKey: QUERY_KEYS.SAMPLE(id),
+     queryFn: () => getCoreSampleById(id),
+     enabled: !!id,
+   });
+diff --git a/src/hooks/core-sample/useGetCoreSamples.ts b/src/hooks/core-sample/useGetCoreSamples.ts
+index 14992e7..91942a5 100644
+--- a/src/hooks/core-sample/useGetCoreSamples.ts
++++ b/src/hooks/core-sample/useGetCoreSamples.ts
+@@ -2,6 +2,7 @@
+ 
+ import { useQuery } from "@tanstack/react-query";
+ import { getAllCoreSamples } from "@/services/core-sample/core-sample.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ type Params = {
+   searchTerm?: string;
+@@ -15,7 +16,7 @@ export const useGetCoreSamples = (
+   params?: Params
+ ) => {
+   return useQuery({
+-    queryKey: ["core-samples", params],
++    queryKey: [...QUERY_KEYS.SAMPLES, params],
+     queryFn: () => getAllCoreSamples(params),
+   });
+ };
+\ No newline at end of file
+diff --git a/src/hooks/core-sample/useGetPublicCoreSamples.ts b/src/hooks/core-sample/useGetPublicCoreSamples.ts
+new file mode 100644
+index 0000000..7251100
+--- /dev/null
++++ b/src/hooks/core-sample/useGetPublicCoreSamples.ts
+@@ -0,0 +1,21 @@
++"use client";
++
++import { useQuery } from "@tanstack/react-query";
++
++import { getPublicCoreSamples } from "@/services/core-sample/core-sample.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
++
++type Params = {
++  searchTerm?: string;
++  rockType?: string;
++  wellName?: string;
++  page?: number;
++  limit?: number;
++};
++
++export const useGetPublicCoreSamples = (params?: Params) => {
++  return useQuery({
++    queryKey: [...QUERY_KEYS.SAMPLES, "public", params],
++    queryFn: () => getPublicCoreSamples(params),
++  });
++};
+diff --git a/src/hooks/core-sample/useUpdateCoreSample.ts b/src/hooks/core-sample/useUpdateCoreSample.ts
+index 3dc394f..eaedc18 100644
+--- a/src/hooks/core-sample/useUpdateCoreSample.ts
++++ b/src/hooks/core-sample/useUpdateCoreSample.ts
+@@ -12,6 +12,7 @@ import {
+ import type {
+   UpdateCoreSamplePayload,
+ } from "@/services/core-sample/core-sample.types";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useUpdateCoreSample = () => {
+   const queryClient = useQueryClient();
+@@ -27,7 +28,7 @@ export const useUpdateCoreSample = () => {
+ 
+     onSuccess: () => {
+       queryClient.invalidateQueries({
+-        queryKey: ["core-samples"],
++        queryKey: QUERY_KEYS.SAMPLES,
+       });
+     },
+   });
+diff --git a/src/hooks/user/useMyProfile.ts b/src/hooks/user/useMyProfile.ts
+index 327ccf4..0c9f544 100644
+--- a/src/hooks/user/useMyProfile.ts
++++ b/src/hooks/user/useMyProfile.ts
+@@ -2,10 +2,11 @@
+ 
+ import { useQuery } from "@tanstack/react-query";
+ import { getMyProfile } from "@/services/user/user.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useMyProfile = () => {
+   return useQuery({
+-    queryKey: ["profile"],
++    queryKey: QUERY_KEYS.PROFILE,
+     queryFn: getMyProfile,
+   });
+ };
+\ No newline at end of file
+diff --git a/src/hooks/well/useCreateWell.ts b/src/hooks/well/useCreateWell.ts
+index 5a5c6e7..cb373d6 100644
+--- a/src/hooks/well/useCreateWell.ts
++++ b/src/hooks/well/useCreateWell.ts
+@@ -6,6 +6,7 @@ import {
+ } from "@tanstack/react-query";
+ 
+ import { createWell } from "@/services/well/well.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useCreateWell = () => {
+   const queryClient = useQueryClient();
+@@ -15,7 +16,7 @@ export const useCreateWell = () => {
+ 
+     onSuccess: () => {
+       queryClient.invalidateQueries({
+-        queryKey: ["wells"],
++        queryKey: QUERY_KEYS.WELLS,
+       });
+     },
+   });
+diff --git a/src/hooks/well/useDeleteWell.ts b/src/hooks/well/useDeleteWell.ts
+index 142353d..d93c58a 100644
+--- a/src/hooks/well/useDeleteWell.ts
++++ b/src/hooks/well/useDeleteWell.ts
+@@ -6,6 +6,7 @@ import {
+ } from "@tanstack/react-query";
+ 
+ import { deleteWell } from "@/services/well/well.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useDeleteWell = () => {
+   const queryClient = useQueryClient();
+@@ -15,7 +16,7 @@ export const useDeleteWell = () => {
+ 
+     onSuccess: () => {
+       queryClient.invalidateQueries({
+-        queryKey: ["wells"],
++        queryKey: QUERY_KEYS.WELLS,
+       });
+     },
+   });
+diff --git a/src/hooks/well/useGetPublicWells.ts b/src/hooks/well/useGetPublicWells.ts
+new file mode 100644
+index 0000000..3292a9b
+--- /dev/null
++++ b/src/hooks/well/useGetPublicWells.ts
+@@ -0,0 +1,20 @@
++"use client";
++
++import { useQuery } from "@tanstack/react-query";
++
++import { getPublicWells } from "@/services/well/well.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
++
++type Params = {
++  searchTerm?: string;
++  status?: string;
++  page?: number;
++  limit?: number;
++};
++
++export const useGetPublicWells = (params?: Params) => {
++  return useQuery({
++    queryKey: [...QUERY_KEYS.WELLS, "public", params],
++    queryFn: () => getPublicWells(params),
++  });
++};
+diff --git a/src/hooks/well/useGetWell.ts b/src/hooks/well/useGetWell.ts
+index 64d974b..1716d74 100644
+--- a/src/hooks/well/useGetWell.ts
++++ b/src/hooks/well/useGetWell.ts
+@@ -3,10 +3,11 @@
+ import { useQuery } from "@tanstack/react-query";
+ 
+ import { getWellById } from "@/services/well/well.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useGetWell = (id: string) => {
+   return useQuery({
+-    queryKey: ["well", id],
++    queryKey: QUERY_KEYS.WELL(id),
+     queryFn: () => getWellById(id),
+     enabled: !!id,
+   });
+diff --git a/src/hooks/well/useGetWells.ts b/src/hooks/well/useGetWells.ts
+index 242b2f3..2a04bf8 100644
+--- a/src/hooks/well/useGetWells.ts
++++ b/src/hooks/well/useGetWells.ts
+@@ -3,6 +3,7 @@
+ import { useQuery } from "@tanstack/react-query";
+ 
+ import { getAllWells } from "@/services/well/well.service";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ type Params = {
+   searchTerm?: string;
+@@ -14,7 +15,7 @@ export const useGetWells = (
+   params?: Params
+ ) => {
+   return useQuery({
+-    queryKey: ["wells", params],
++    queryKey: [...QUERY_KEYS.WELLS, params],
+     queryFn: () => getAllWells(params),
+   });
+ };
+\ No newline at end of file
+diff --git a/src/hooks/well/useUpdateWell.ts b/src/hooks/well/useUpdateWell.ts
+index 276cda9..e3a6af2 100644
+--- a/src/hooks/well/useUpdateWell.ts
++++ b/src/hooks/well/useUpdateWell.ts
+@@ -7,6 +7,7 @@ import {
+ 
+ import { updateWell } from "@/services/well/well.service";
+ import type { UpdateWellPayload } from "@/services/well/well.types";
++import { QUERY_KEYS } from "@/constants/queryKeys";
+ 
+ export const useUpdateWell = () => {
+   const queryClient = useQueryClient();
+@@ -22,7 +23,7 @@ export const useUpdateWell = () => {
+ 
+     onSuccess: () => {
+       queryClient.invalidateQueries({
+-        queryKey: ["wells"],
++        queryKey: QUERY_KEYS.WELLS,
+       });
+     },
+   });
+diff --git a/src/lib/axios.ts b/src/lib/axios.ts
+index 8641158..87b13b7 100644
+--- a/src/lib/axios.ts
++++ b/src/lib/axios.ts
+@@ -1,6 +1,10 @@
+ import axios from "axios";
+ import { env } from "@/config/env";
+-import { getAccessToken } from "@/utils/token";
++import {
++  getAccessToken,
++  saveAccessToken,
++  removeAccessToken,
++} from "@/utils/token";
+ 
+ const axiosInstance = axios.create({
+   baseURL: env.baseURL,
+@@ -17,4 +21,89 @@ axiosInstance.interceptors.request.use((config) => {
+   return config;
+ });
+ 
+-export default axiosInstance;
+\ No newline at end of file
++// --- Silent access-token refresh on 401 ---
++// The backend issues a short-lived access token + an HttpOnly refresh
++// cookie. When a request fails with 401, we try refreshing the access
++// token once (via the refresh cookie) and retry the original request.
++// Concurrent 401s while a refresh is already in flight are queued so we
++// only call /refresh-token once.
++
++let isRefreshing = false;
++let pendingQueue: Array<(token: string | null) => void> = [];
++
++const processQueue = (token: string | null) => {
++  pendingQueue.forEach((callback) => callback(token));
++  pendingQueue = [];
++};
++
++axiosInstance.interceptors.response.use(
++  (response) => response,
++  async (error) => {
++    const originalRequest = error.config;
++
++    const isAuthEndpoint =
++      originalRequest?.url?.includes("/login") ||
++      originalRequest?.url?.includes("/register") ||
++      originalRequest?.url?.includes("/refresh-token");
++
++    if (
++      error.response?.status === 401 &&
++      originalRequest &&
++      !originalRequest._retry &&
++      !isAuthEndpoint
++    ) {
++      originalRequest._retry = true;
++
++      if (isRefreshing) {
++        return new Promise((resolve, reject) => {
++          pendingQueue.push((token) => {
++            if (token) {
++              originalRequest.headers.Authorization = `Bearer ${token}`;
++              resolve(axiosInstance(originalRequest));
++            } else {
++              reject(error);
++            }
++          });
++        });
++      }
++
++      isRefreshing = true;
++
++      try {
++        const { data } = await axios.post(
++          `${env.baseURL}/users/refresh-token`,
++          {},
++          { withCredentials: true }
++        );
++
++        const newToken: string | undefined = data?.data?.accessToken;
++
++        if (!newToken) {
++          throw new Error("Refresh did not return an access token.");
++        }
++
++        saveAccessToken(newToken);
++        processQueue(newToken);
++
++        originalRequest.headers.Authorization = `Bearer ${newToken}`;
++
++        return axiosInstance(originalRequest);
++      } catch (refreshError) {
++        processQueue(null);
++        removeAccessToken();
++
++        if (typeof window !== "undefined") {
++          window.location.href = "/login";
++        }
++
++        return Promise.reject(refreshError);
++      } finally {
++        isRefreshing = false;
++      }
++    }
++
++    return Promise.reject(error);
++  }
++);
++
++export default axiosInstance;
+diff --git a/src/services/auth/auth.mutation.ts b/src/services/auth/auth.mutation.ts
+deleted file mode 100644
+index edd8ada..0000000
+--- a/src/services/auth/auth.mutation.ts
++++ /dev/null
+@@ -1,23 +0,0 @@
+-"use client";
+-
+-import { useMutation } from "@tanstack/react-query";
+-import {
+-  loginUser,
+-  logoutUser,
+-  registerUser,
+-} from "./auth.service";
+-
+-export const useRegisterMutation = () =>
+-  useMutation({
+-    mutationFn: registerUser,
+-  });
+-
+-export const useLoginMutation = () =>
+-  useMutation({
+-    mutationFn: loginUser,
+-  });
+-
+-export const useLogoutMutation = () =>
+-  useMutation({
+-    mutationFn: logoutUser,
+-  });
+\ No newline at end of file
+diff --git a/src/services/auth/auth.query.ts b/src/services/auth/auth.query.ts
+deleted file mode 100644
+index 7d13218..0000000
+--- a/src/services/auth/auth.query.ts
++++ /dev/null
+@@ -1,10 +0,0 @@
+-"use client";
+-
+-import { useQuery } from "@tanstack/react-query";
+-import { getMe } from "./auth.service";
+-
+-export const useMeQuery = () =>
+-  useQuery({
+-    queryKey: ["me"],
+-    queryFn: getMe,
+-  });
+\ No newline at end of file
+diff --git a/src/services/auth/index.ts b/src/services/auth/index.ts
+index ceae934..dc980ad 100644
+--- a/src/services/auth/index.ts
++++ b/src/services/auth/index.ts
+@@ -1,4 +1,2 @@
+ export * from "./auth.service";
+ export * from "./auth.types";
+-export * from "./auth.mutation";
+-export * from "./auth.query";
+\ No newline at end of file
+diff --git a/src/services/core-sample/core-sample.service.ts b/src/services/core-sample/core-sample.service.ts
+index 0348f27..b66f954 100644
+--- a/src/services/core-sample/core-sample.service.ts
++++ b/src/services/core-sample/core-sample.service.ts
+@@ -26,6 +26,21 @@ export const getAllCoreSamples = async (
+   return data;
+ };
+ 
++// Get All (public, no auth, for the public explore page)
++export const getPublicCoreSamples = async (
++  params?: Record<string, unknown>
++): Promise<GetCoreSamplesResponse> => {
++  const { data } =
++    await axiosInstance.get<GetCoreSamplesResponse>(
++      API_ENDPOINTS.CORE_SAMPLES_PUBLIC,
++      {
++        params,
++      }
++    );
++
++  return data;
++};
++
+ // Get Single
+ export const getCoreSampleById = async (
+   id: string
+diff --git a/src/services/core-sample/core-sample.types.ts b/src/services/core-sample/core-sample.types.ts
+index 19d3781..d16ec68 100644
+--- a/src/services/core-sample/core-sample.types.ts
++++ b/src/services/core-sample/core-sample.types.ts
+@@ -25,6 +25,7 @@ export interface CreateCoreSamplePayload {
+   depthTo: number;
+   rockType: string;
+   description?: string;
++  imageUrl?: string;
+ }
+ 
+ export type UpdateCoreSamplePayload =
+diff --git a/src/services/well/well.service.ts b/src/services/well/well.service.ts
+index f03731f..24e8171 100644
+--- a/src/services/well/well.service.ts
++++ b/src/services/well/well.service.ts
+@@ -37,6 +37,25 @@ export const getMyWells = async (): Promise<GetWellsResponse> => {
+   return data;
+ };
+ 
++// Get Public Wells (no auth required, for the public explore page)
++export const getPublicWells = async (
++  params?: {
++    searchTerm?: string;
++    status?: string;
++    page?: number;
++    limit?: number;
++  }
++): Promise<GetWellsResponse> => {
++  const { data } = await axiosInstance.get<GetWellsResponse>(
++    API_ENDPOINTS.WELLS_PUBLIC,
++    {
++      params,
++    }
++  );
++
++  return data;
++};
++
+ // Get Single Well (Future)
+ export const getWellById = async (
+   id: string
+diff --git a/src/services/well/well.types.ts b/src/services/well/well.types.ts
+index 329c85a..6ed77a3 100644
+--- a/src/services/well/well.types.ts
++++ b/src/services/well/well.types.ts
+@@ -12,6 +12,7 @@ export interface CreateWellPayload {
+   depth: number;
+   status: WellStatus;
+   description?: string;
++  imageUrl?: string;
+ }
+ 
+ export type UpdateWellPayload =
+diff --git a/src/types/sample.ts b/src/types/sample.ts
+index fa1a891..faa8963 100644
+--- a/src/types/sample.ts
++++ b/src/types/sample.ts
+@@ -14,5 +14,7 @@ export interface CoreSample extends BaseEntity {
+ 
+   description: string;
+ 
++  imageUrl?: string;
++
+   collectedBy: string | User;
+ }
+\ No newline at end of file
+diff --git a/src/types/well.ts b/src/types/well.ts
+index a6d724c..d142514 100644
+--- a/src/types/well.ts
++++ b/src/types/well.ts
+@@ -12,5 +12,6 @@ export interface Well extends BaseEntity {
+   depth: number;
+   status: WellStatus;
+   description: string;
++  imageUrl?: string;
+   createdBy: string;
+ }
+\ No newline at end of file
+diff --git a/src/validators/sample.schema.ts b/src/validators/sample.schema.ts
+index 4244d6f..8015ccf 100644
+--- a/src/validators/sample.schema.ts
++++ b/src/validators/sample.schema.ts
+@@ -12,6 +12,13 @@ export const coreSampleSchema = z.object({
+   rockType: z.string().min(1, "Rock type is required."),
+ 
+   description: z.string().optional(),
++
++  imageUrl: z
++    .string()
++    .trim()
++    .url("Enter a valid image URL.")
++    .optional()
++    .or(z.literal("")),
+ });
+ 
+ export type CoreSampleFormData = z.infer<typeof coreSampleSchema>;
+\ No newline at end of file
+diff --git a/src/validators/well.schema.ts b/src/validators/well.schema.ts
+index d6bc590..7f5c881 100644
+--- a/src/validators/well.schema.ts
++++ b/src/validators/well.schema.ts
+@@ -27,6 +27,13 @@ export const wellSchema = z.object({
+   ]),
+ 
+   description: z.string().optional(),
++
++  imageUrl: z
++    .string()
++    .trim()
++    .url("Enter a valid image URL.")
++    .optional()
++    .or(z.literal("")),
+ });
+ 
+ export type WellFormData = z.input<typeof wellSchema>;
+\ No newline at end of file
