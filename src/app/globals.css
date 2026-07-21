@@ -4,63 +4,72 @@
   themes: geolog, geolog-dark;
 }
 
-/* Light Theme (geolog) */
+/* ============================================================
+   Light Theme — "geolog"
+   Direction: Earth & Strata — warm paper base, deep indigo
+   (night sky over the rig), rust/ochre accents (drill core,
+   oxidized iron, sedimentary bands).
+   ============================================================ */
 @plugin "daisyui/theme" {
   name: "geolog";
   default: true;
   color-scheme: light;
 
-  --color-base-100: #ffffff;
-  --color-base-200: #f4f5f7;
-  --color-base-300: #e5e7eb;
-  --color-base-content: #1f2937;
+  --color-base-100: #fdfbf7;   /* warm paper white */
+  --color-base-200: #f2ede3;   /* warm stone */
+  --color-base-300: #e3d9c6;   /* sediment / core-sample tan */
+  --color-base-content: #221e18; /* deep warm charcoal, near-black shale */
 
-  --color-primary: #2563eb;
+  --color-primary: #1f2d4d;         /* deep indigo — strata / night sky */
   --color-primary-content: #ffffff;
-  --color-secondary: #0d9488;
+  --color-secondary: #b5541a;       /* rust / drill-core terracotta */
   --color-secondary-content: #ffffff;
-  --color-accent: #7c3aed;
-  --color-accent-content: #ffffff;
+  --color-accent: #c98a2c;          /* ochre gold — sedimentary bands */
+  --color-accent-content: #201604;
 
-  --color-neutral: #374151;
-  --color-neutral-content: #f9fafb;
-  --color-info: #0ea5e9;
-  --color-success: #16a34a;
-  --color-warning: #f59e0b;
-  --color-error: #dc2626;
+  --color-neutral: #46402f;
+  --color-neutral-content: #f7f2e6;
+  --color-info: #2f6690;      /* muted steel blue */
+  --color-success: #3f6b3a;   /* muted earthy green */
+  --color-warning: #d99323;   /* warm amber */
+  --color-error: #9c2b2b;     /* deep rust-red, distinct from secondary */
 
-  --radius-selector: 0.75rem;
-  --radius-field: 0.5rem;
-  --radius-box: 1rem;
+  --radius-selector: 0.6rem;
+  --radius-field: 0.45rem;
+  --radius-box: 0.85rem;
 }
 
-/* Dark Theme (geolog-dark) */
+/* ============================================================
+   Dark Theme — "geolog-dark"
+   Direction: same story after sundown — near-black indigo bed,
+   glowing rust/ochre accents like drill-rig lamps against rock.
+   ============================================================ */
 @plugin "daisyui/theme" {
   name: "geolog-dark";
   color-scheme: dark;
 
-  --color-base-100: #0f172a;
-  --color-base-200: #1e293b;
-  --color-base-300: #334155;
-  --color-base-content: #f8fafc;
+  --color-base-100: #0c0f16;   /* near-black indigo-charcoal */
+  --color-base-200: #141924;   /* panel */
+  --color-base-300: #212736;   /* border / divider */
+  --color-base-content: #f3ede0; /* warm parchment white */
 
-  --color-primary: #3b82f6;
-  --color-primary-content: #ffffff;
-  --color-secondary: #2dd4bf;
-  --color-secondary-content: #0f172a;
-  --color-accent: #a78bfa;
-  --color-accent-content: #0f172a;
+  --color-primary: #5b7fd6;        /* brightened indigo-blue */
+  --color-primary-content: #0c0f16;
+  --color-secondary: #e08a3c;      /* glowing rust-amber */
+  --color-secondary-content: #1a1006;
+  --color-accent: #e8b84b;         /* glowing ochre-gold */
+  --color-accent-content: #1a1608;
 
-  --color-neutral: #334155;
-  --color-neutral-content: #f8fafc;
-  --color-info: #38bdf8;
-  --color-success: #22c55e;
-  --color-warning: #fbbf24;
-  --color-error: #f87171;
+  --color-neutral: #2a2f3d;
+  --color-neutral-content: #f3ede0;
+  --color-info: #5aa0c9;
+  --color-success: #6ea86a;
+  --color-warning: #e0a83c;
+  --color-error: #d16456;
 
-  --radius-selector: 0.75rem;
-  --radius-field: 0.5rem;
-  --radius-box: 1rem;
+  --radius-selector: 0.6rem;
+  --radius-field: 0.45rem;
+  --radius-box: 0.85rem;
 }
 
 body {
